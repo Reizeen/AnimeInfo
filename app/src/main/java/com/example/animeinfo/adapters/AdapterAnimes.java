@@ -12,10 +12,12 @@ import com.example.animeinfo.model.Anime;
 
 import java.util.ArrayList;
 
-public class AdapterAnimes extends RecyclerView.Adapter<AdapterAnimes.ViewHolderDatos> {
+public class AdapterAnimes extends RecyclerView.Adapter<AdapterAnimes.ViewHolderDatos>
+                            implements View.OnClickListener {
 
 
     private ArrayList<Anime> listaAnimes;
+    private View.OnClickListener listener;
 
     public AdapterAnimes(ArrayList<Anime> listaAnimes) {
         this.listaAnimes = listaAnimes;
@@ -24,6 +26,7 @@ public class AdapterAnimes extends RecyclerView.Adapter<AdapterAnimes.ViewHolder
     @Override
     public ViewHolderDatos onCreateViewHolder(ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_list, null, false);
+        view.setOnClickListener(this);
         return new ViewHolderDatos(view);
     }
 
@@ -31,12 +34,23 @@ public class AdapterAnimes extends RecyclerView.Adapter<AdapterAnimes.ViewHolder
     public void onBindViewHolder(ViewHolderDatos holder, int position) {
         holder.nombreText.setText(listaAnimes.get(position).getTitulo());
         holder.infoText.setText(listaAnimes.get(position).getInfo());
-        holder.fotoImage.setImageResource(listaAnimes.get(position).getFoto())   ;
+        holder.fotoImage.setImageResource(listaAnimes.get(position).getFoto());
     }
 
     @Override
     public int getItemCount() {
         return listaAnimes.size();
+    }
+
+    /** Evento de seleccion */
+    public void setOnClickListener(View.OnClickListener listener){
+        this.listener = listener;
+    }
+
+    @Override
+    public void onClick(View view) {
+        if (listener != null)
+            listener.onClick(view);
     }
 
     public class ViewHolderDatos extends RecyclerView.ViewHolder {
