@@ -53,6 +53,14 @@ public class AdapterAnimes extends RecyclerView.Adapter<AdapterAnimes.ViewHolder
             listener.onClick(view);
     }
 
+
+    public void setFilter(ArrayList<Anime> listaAnimes){
+         this.listaAnimes = new ArrayList<>();
+         this.listaAnimes.addAll(listaAnimes);
+         // Actualizar si hay cambios
+         notifyDataSetChanged();
+    }
+
     public class ViewHolderDatos extends RecyclerView.ViewHolder {
 
         TextView nombreText, infoText;
@@ -63,7 +71,6 @@ public class AdapterAnimes extends RecyclerView.Adapter<AdapterAnimes.ViewHolder
             nombreText = (TextView) itemView.findViewById(R.id.idTitulo);
             infoText = (TextView) itemView.findViewById(R.id.idInfo);
             fotoImage = (ImageView) itemView.findViewById(R.id.idImagen);
-
         }
     }
 }

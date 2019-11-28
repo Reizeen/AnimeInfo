@@ -14,9 +14,11 @@
 
     <item android:id="@+id/action_buscar"
         android:icon="@drawable/search"
-        android:orderInCategory="100"
-        app:showAsAction="ifRoom"
-        android:title="" />
+        app:actionViewClass="android.widget.SearchView"
+        app:showAsAction="always|collapseActionView"
+        android:title="Buscador" />
+
+
 
     <item android:id="@+id/action_anadir"
         android:icon="@drawable/add"
