@@ -18,13 +18,10 @@
         app:showAsAction="always|collapseActionView"
         android:title="Buscador" />
 
-
-
     <item android:id="@+id/action_anadir"
         android:icon="@drawable/add"
         android:orderInCategory="100"
         app:showAsAction="ifRoom"
         android:title="" />
-
 
 </menu>
