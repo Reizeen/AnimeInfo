@@ -2,20 +2,15 @@
 xmlns:app="http://schemas.android.com/apk/res-auto"
 xmlns:tools="http://schemas.android.com/tools" tools:context=".controllers.MainActivity">
 
-    <item android:id="@+id/action_favoritos"
+    <item android:id="@+id/guardar"
+        android:title="Guardar"
         android:orderInCategory="100"
-        app:showAsAction="never"
-        android:title="Favoritos" />
+        app:showAsAction="never"/>
 
-    <item android:id="@+id/action_settings"
-        android:title="Ajustes"
-        android:orderInCategory="100"
-        app:showAsAction="never" />
-
-    <item android:id="@+id/action_anadir"
-        android:icon="@drawable/regresar"
+    <item android:id="@+id/favorito"
+        android:icon="@drawable/fav"
         android:orderInCategory="100"
         app:showAsAction="ifRoom"
-        android:title="" />
+        android:title=""/>
 
 </menu>
