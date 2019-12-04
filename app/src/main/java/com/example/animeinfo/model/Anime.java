@@ -6,15 +6,19 @@ public class Anime implements Serializable {
 
     private int id;
     private String titulo;
-    private String info;
+    private String estreno;
     private int foto;
     private boolean favorito;
+    private String url;
+    private String info;
 
-    public Anime(int id, String titulo,  boolean favorito, int foto, String info) {
+    public Anime(int id, String titulo, String estreno, boolean favorito, int foto, String url, String info) {
         this.id = id;
         this.titulo = titulo;
         this.favorito = favorito;
+        this.estreno = estreno;
         this.foto = foto;
+        this.url = url;
         this.info = info;
     }
 
@@ -56,5 +60,21 @@ public class Anime implements Serializable {
 
     public void setFavorito(boolean favorito) {
         this.favorito = favorito;
+    }
+
+    public String getEstreno() {
+        return estreno;
+    }
+
+    public void setEstreno(String estreno) {
+        this.estreno = estreno;
+    }
+
+    public String getUrl() {
+        return url;
+    }
+
+    public void setUrl(String url) {
+        this.url = url;
     }
 }

@@ -53,7 +53,7 @@ public class AdapterAnimes extends RecyclerView.Adapter<AdapterAnimes.ViewHolder
             listener.onClick(view);
     }
 
-
+    /** Actuliza el Recycler si hay modificaciones */
     public void setFilter(ArrayList<Anime> listaAnimes){
          this.listaAnimes = new ArrayList<>();
          this.listaAnimes.addAll(listaAnimes);

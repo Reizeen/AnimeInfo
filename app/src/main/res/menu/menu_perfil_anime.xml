@@ -2,15 +2,23 @@
 xmlns:app="http://schemas.android.com/apk/res-auto"
 xmlns:tools="http://schemas.android.com/tools" tools:context=".controllers.MainActivity">
 
-    <item android:id="@+id/guardar"
-        android:title="Guardar"
-        android:orderInCategory="100"
-        app:showAsAction="never"/>
-
     <item android:id="@+id/favorito"
         android:icon="@drawable/fav"
-        android:orderInCategory="100"
-        app:showAsAction="ifRoom"
+        app:showAsAction="always"
         android:title=""/>
+
+    <item android:id="@+id/compartir"
+        android:icon="@drawable/share"
+        app:showAsAction="always"
+        android:title=""/>
+
+    <item android:id="@+id/infoWeb"
+        android:icon="@drawable/info"
+        app:showAsAction="always"
+        android:title=""/>
+
+    <item android:id="@+id/email"
+        app:showAsAction="ifRoom"
+        android:title="Enviar correo"/>
 
 </menu>
