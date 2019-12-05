@@ -6,8 +6,8 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -41,8 +41,10 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         abrePerfilAnime(adapterAnimes);
     }
 
-    /** Crear Menu del MainActivity
-      * Crear Buscador para el menu **/
+    /**
+     * Crear Menu del MainActivity
+     * Crear Buscador para el menu
+     */
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
@@ -70,7 +72,9 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         return true;
     }
 
-    /** Insertar datos iniciales al RecyclerView **/
+    /**
+     * Insertar datos iniciales al RecyclerView
+     */
     public void llenarAnimes() {
         listaAnimes.add(new Anime(0,"Tokyo Ghoul", "2014", true, R.drawable.tokyoghoul, "https://es.wikipedia.org/wiki/Tokyo_Ghoul", "En Tokio ocurren varias muertes, cometidas por Ghouls, seres desconocidos que sobreviven a base de carne humana. Un día Ken Kaneki, un joven de 18 años conoce a una chica llamada Rize Kamishiro en una cafetería y la invita a salir. Tras una cita aparentemente normal, Kaneki se ofrece a acompañarla a su casa. Al entrar a un callejón es atacado por ella, quien resulta ser un Ghoul. Durante el ataque, Kaneki es salvado por la caída de unas vigas que matan a Rize antes de que pueda matarlo, pero lo deja terriblemente herido. Debido a la gravedad de sus heridas, recibe un trasplante de órganos por el ghoul atacante (Rize Kamishiro). Así, Kaneki termina convirtiéndose en un ser mitad Ghoul y mitad Humano, de ahora en adelante deberá vivir escondiéndose de los humanos sin tener a quién recurrir. Conoce a unos Ghouls quienes trabajan en la cafetería donde conoció a Rize y se entera que los trabajadores de esa cafetería también resultan ser ghouls que sobreviven a base de cafe, ya que el cafe es el único gusto que comparten los Ghouls y los humanos. Lo demás es rechazado por el estómago de los Ghouls, salvo la carne humana, que han de consumir cada cierto tiempo.Durante el transcurso de la historia Kaneki conocerá a nuevos compañeros y verá el lado oscuro de tanto la humanidad como de los Ghouls"));
 
@@ -92,7 +96,9 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                 "Luego Kagome ve un pequeño llavero con una esfera que tenía la inscripción de shikon no dama mientras que lo veía su abuelo le contaba la leyenda respecto a ella (historia que a Kagome la parecía aburrida...\n"));
     }
 
-    /** Metodo onClick del menu **/
+    /**
+     *Metodo onClick del menu
+     */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
@@ -102,12 +108,16 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
             case R.id.action_favoritos:
                 abreFavoritos();
                 return true;
+            case R.id.action_llamar:
+                llamarTienda();
             default:
                 return super.onOptionsItemSelected(item);
         }
     }
 
-    /** Abre la actividad del perfil de un item del RecyclerView */
+    /**
+     * Abre la actividad del perfil de un item del RecyclerView
+     */
     public void abrePerfilAnime(AdapterAnimes adapterAnimes){
         adapterAnimes.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -120,21 +130,34 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         });
     }
 
-    /** Abre la actividad del perfil de un item del RecyclerView */
+    /**
+     * Abre la actividad del perfil de un item del RecyclerView
+     */
     public void abreCrearAnime(){
         Intent intencion = new Intent(MainActivity.this, AddAnime.class);
         intencion.putExtra("id", listaAnimes.size());
         startActivityForResult(intencion, 102);
     }
 
-    /** Abre la actividad de Favoritos */
+    /**
+     * Abre la actividad de Favoritos
+     */
     private void abreFavoritos() {
         Intent intent = new Intent(MainActivity.this, Favoritos.class);
         intent.putExtra("listaAnime", listaAnimes);
         startActivityForResult(intent, 103);
     }
 
-    /** Guardar la informacion de las otras actividades **/
+    /**
+     * Llamar por telefono a la tienda
+     */
+    private void llamarTienda() {
+        startActivity(new Intent(Intent.ACTION_DIAL, Uri.parse("tel:672629147")));
+    }
+
+    /**
+     * Guardar la informacion de las otras actividades
+     */
     public void onActivityResult(int requestCode, int resultCode, Intent code){
         if (requestCode == 101 && resultCode == RESULT_OK){
             Anime animeMod = (Anime) code.getSerializableExtra("anime");
@@ -173,9 +196,11 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         return false;
     }
 
-    /** FILTRADO DEL BUSCADOR **/
-    /** Si lo que tecleo se encuentra en la lista de animes lo agrego a una
-      * lista donde muestre los animes que coinciden con lo buscado segun el titulo **/
+    /**
+     *  FILTRADO DEL BUSCADOR
+     *  Si lo que tecleo se encuentra en la lista de animes lo agrego a una
+     *  lista donde muestre los animes que coinciden con lo buscado segun el titulo
+     */
     private ArrayList<Anime> filter(ArrayList<Anime> animes, String texto){
         ArrayList<Anime> listaFiltrada = new ArrayList<>();
 

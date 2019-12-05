@@ -42,7 +42,9 @@ public class AdapterAnimes extends RecyclerView.Adapter<AdapterAnimes.ViewHolder
         return listaAnimes.size();
     }
 
-    /** Evento de seleccion */
+    /**
+     * Evento de seleccion
+     */
     public void setOnClickListener(View.OnClickListener listener){
         this.listener = listener;
     }
@@ -53,12 +55,13 @@ public class AdapterAnimes extends RecyclerView.Adapter<AdapterAnimes.ViewHolder
             listener.onClick(view);
     }
 
-    /** Actuliza el Recycler si hay modificaciones */
+    /**
+     * Actuliza el Recycler si hay modificaciones
+     */
     public void setFilter(ArrayList<Anime> listaAnimes){
          this.listaAnimes = new ArrayList<>();
          this.listaAnimes.addAll(listaAnimes);
-         // Actualizar si hay cambios
-         notifyDataSetChanged();
+         notifyDataSetChanged(); // Actualizar si hay cambios
     }
 
     public class ViewHolderDatos extends RecyclerView.ViewHolder {

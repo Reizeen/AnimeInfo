@@ -3,6 +3,7 @@
     package="com.example.animeinfo">
 
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.CALL_PHONE" />
 
     <application
         android:allowBackup="true"
@@ -11,7 +12,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".controllers.Favoritos"></activity>
+        <activity android:name=".controllers.Favoritos" />
         <activity android:name=".controllers.AddAnime" />
         <activity android:name=".controllers.PerfilAnime" />
         <activity android:name=".controllers.MainActivity">

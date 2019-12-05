@@ -42,7 +42,9 @@ public class PerfilAnime extends AppCompatActivity {
 
     }
 
-    /** Crea el menu **/
+    /**
+     *  Crea el menu
+     */
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_perfil_anime, menu);
@@ -50,7 +52,10 @@ public class PerfilAnime extends AppCompatActivity {
         return true;
     }
 
-    /** Comprueba si el anime es favorito y cambia el icono **/
+    /** **/
+    /**
+     *  Comprueba si el anime es favorito y cambia el icono
+     */
     public void comprobarFavorito(Menu menu, Boolean fav){
         if (fav)
             menu.getItem(0).setIcon(R.drawable.fav_press);
@@ -58,7 +63,9 @@ public class PerfilAnime extends AppCompatActivity {
             menu.getItem(0).setIcon(R.drawable.fav);
     }
 
-    /** Metodo onClick del menu **/
+    /**
+     *  Metodo onClick del menu
+     */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
@@ -79,14 +86,18 @@ public class PerfilAnime extends AppCompatActivity {
         }
     }
 
-    /** Ir a la paina de la fuente **/
+    /**
+     * Ir a la paina de la fuente
+     */
     private void verWebInfo() {
         Uri uri = Uri.parse(anime.getUrl());
         Intent intent = new Intent(Intent.ACTION_VIEW, uri);
         startActivity(intent);
     }
 
-    /** Añadir o elminar de favoritos **/
+    /**
+     * Añadir o elminar de favoritos
+     */
     public void addFavoritos(MenuItem item){
         if (fav){
             fav = false;
@@ -102,7 +113,9 @@ public class PerfilAnime extends AppCompatActivity {
         setResult(RESULT_OK, intencion);
     }
 
-    /** Comaprtir descripcion **/
+    /**
+     * Comaprtir descripcion
+     */
     private void compartirInfo() {
         Intent intent = new Intent(Intent.ACTION_SEND);
         intent.setType("text/plain");
@@ -110,6 +123,9 @@ public class PerfilAnime extends AppCompatActivity {
         startActivity(Intent.createChooser(intent, "Compartir en"));
     }
 
+    /**
+     * Enviar correo a traves de un intent especifico para ello.
+     */
     private void enviarCorreo() {
         String[] TO = {""};
         String[] CC = {""};

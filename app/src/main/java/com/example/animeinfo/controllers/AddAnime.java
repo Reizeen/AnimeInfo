@@ -38,13 +38,18 @@ public class AddAnime extends AppCompatActivity {
         info = findViewById(R.id.idInfoAdd);
     }
 
+    /**
+     * Coger una imagen de la galeria
+     */
     public void subirImagen(View view) {
-        /// Recorre la galeria de imagenes
         Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
         intent.setType("image/");
         startActivityForResult(intent.createChooser(intent, "Seleccione la aplicacion"), 10);
     }
 
+    /**
+     * Cargar la imagen de la galeria en la actividad
+     */
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -54,6 +59,9 @@ public class AddAnime extends AppCompatActivity {
         }
     }
 
+    /**
+     * Volver a la actividad con los datos insertados en el nuevo objeto
+     */
     public void onVolver(View view) {
         anime = new Anime(id, titulo.getText().toString(), estreno.getText().toString(), false, R.drawable.imagen_no_disponible_dos, fuente.getText().toString(), info.getText().toString());
         Intent intencion = new Intent(AddAnime.this, MainActivity.class);

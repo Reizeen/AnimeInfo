@@ -7,8 +7,8 @@
         app:showAsAction="never"
         android:title="Favoritos" />
 
-    <item android:id="@+id/action_settings"
-        android:title="Ajustes"
+    <item android:id="@+id/action_llamar"
+        android:title="Llamar a tienda"
         android:orderInCategory="100"
         app:showAsAction="never" />
 

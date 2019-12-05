@@ -31,6 +31,9 @@ public class Favoritos extends AppCompatActivity {
         recyclerAnimes.setAdapter(adapterAnimes);
     }
 
+    /**
+     * Visualizar solo los objetos que tengan en favoritos = true
+     */
     public ArrayList<Anime> animesFavoritos(ArrayList<Anime> lista){
         ArrayList<Anime> nuevaLista = new ArrayList<>();
         for (Anime anime : lista) {
