@@ -14,8 +14,8 @@ xmlns:tools="http://schemas.android.com/tools" tools:context=".controllers.MainA
 
     <item android:id="@+id/infoWeb"
         android:icon="@drawable/info"
-        app:showAsAction="always"
-        android:title=""/>
+        app:showAsAction="ifRoom"
+        android:title="Más información"/>
 
     <item android:id="@+id/email"
         app:showAsAction="ifRoom"

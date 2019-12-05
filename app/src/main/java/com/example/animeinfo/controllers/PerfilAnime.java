@@ -124,7 +124,6 @@ public class PerfilAnime extends AppCompatActivity {
 
         try {
             startActivity(Intent.createChooser(emailIntent, "Enviar mail..."));
-            finish();
 
         } catch (android.content.ActivityNotFoundException ex) {
             Toast.makeText(PerfilAnime.this, "No hay un cliente de correo electrónico instalado.", Toast.LENGTH_SHORT).show();
