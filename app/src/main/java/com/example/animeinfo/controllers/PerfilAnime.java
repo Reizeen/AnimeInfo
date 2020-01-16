@@ -90,7 +90,11 @@ public class PerfilAnime extends AppCompatActivity {
      * Ir a la paina de la fuente
      */
     private void verWebInfo() {
-        Uri uri = Uri.parse(anime.getUrl());
+        String enlace = anime.getUrl();
+        if (!enlace.startsWith("https://") && !enlace.startsWith("http://"))
+            enlace = "http://" + enlace;
+
+        Uri uri = Uri.parse(enlace);
         Intent intent = new Intent(Intent.ACTION_VIEW, uri);
         startActivity(intent);
     }
@@ -129,7 +133,7 @@ public class PerfilAnime extends AppCompatActivity {
     private void enviarCorreo() {
         String[] TO = {""};
         String[] CC = {""};
-        Intent emailIntent = new Intent(Intent.ACTION_SEND);
+        Intent emailIntent = new Intent(Intent.ACTION_SENDTO);
 
         emailIntent.setData(Uri.parse("mailto:"));
         emailIntent.setType("text/plain");

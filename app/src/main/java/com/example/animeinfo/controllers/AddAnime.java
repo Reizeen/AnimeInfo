@@ -3,7 +3,9 @@ package com.example.animeinfo.controllers;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.ContentValues;
 import android.content.Intent;
+import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -11,30 +13,31 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.animeinfo.R;
 import com.example.animeinfo.model.Anime;
+import com.example.animeinfo.model.AnimeConstantes;
+import com.example.animeinfo.model.ConexionSQLiteHelper;
 
 public class AddAnime extends AppCompatActivity {
 
     private ImageView imagen;
     private Anime anime;
     private EditText estreno;
-    private EditText fuente;
+    private EditText url;
     private EditText titulo;
     private EditText info;
-    private int id;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_anime);
 
-        imagen = findViewById(R.id.imagenSubida);
-        id = getIntent().getIntExtra("id", -1);
         titulo = findViewById(R.id.idTituloAdd);
         estreno = findViewById(R.id.idEstrenoAdd);
-        fuente = findViewById(R.id.idFuenteAdd);
+        imagen = findViewById(R.id.imagenSubida);
+        url = findViewById(R.id.idFuenteAdd);
         info = findViewById(R.id.idInfoAdd);
     }
 
@@ -59,14 +62,33 @@ public class AddAnime extends AppCompatActivity {
         }
     }
 
+
+    public Boolean insertarAnime(){
+        ConexionSQLiteHelper conn = new ConexionSQLiteHelper(this, AnimeConstantes.NOMBRE_DB, null, 1);
+
+        // Poder escribir en la base de datod
+        SQLiteDatabase db = conn.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(AnimeConstantes.TITULO, titulo.getText().toString());
+        values.put(AnimeConstantes.ESTRENO, estreno.getText().toString());
+        values.put(AnimeConstantes.FAVORITO, 0);
+        values.put(AnimeConstantes.URL_WEB, url.getText().toString());
+        values.put(AnimeConstantes.INFO_DESCRIPCION, info.getText().toString());
+
+        //Insertamos el registro en la base de datos
+        if(db.insert(AnimeConstantes.TABLA_ANIME, null, values) != -1)
+            return true;
+        return false;
+
+    }
+
     /**
      * Volver a la actividad con los datos insertados en el nuevo objeto
      */
     public void onVolver(View view) {
-        anime = new Anime(id, titulo.getText().toString(), estreno.getText().toString(), false, R.drawable.imagen_no_disponible_dos, fuente.getText().toString(), info.getText().toString());
-        Intent intencion = new Intent(AddAnime.this, MainActivity.class);
-        intencion.putExtra("anime", anime);
-        setResult(RESULT_OK, intencion);
-        finish();
+        if (insertarAnime())
+            finish();
+        else
+            Toast.makeText(this, "Error al insertar los datos", Toast.LENGTH_SHORT);
     }
 }
