@@ -1,7 +1,11 @@
 package com.example.animeinfo.controllers;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.MenuItemCompat;
+import androidx.loader.app.LoaderManager;
+import androidx.loader.content.Loader;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -25,11 +29,11 @@ import com.example.animeinfo.model.ConexionSQLiteHelper;
 
 import java.util.ArrayList;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements AdapterAnimes.OnItemClickListener, LoaderManager.LoaderCallbacks<Cursor> {
 
     private AdapterAnimes adapterAnimes;
-    private ArrayList<Anime> listaAnimes;
     private RecyclerView recyclerAnimes;
+    private LinearLayoutManager linearLayoutManager;
     private ConexionSQLiteHelper conexion;
 
     @Override
@@ -40,14 +44,14 @@ public class MainActivity extends AppCompatActivity {
         // Creamos la base de datos
         conexion = new ConexionSQLiteHelper(this, AnimeConstantes.NOMBRE_DB, null, 1);
 
-        listaAnimes = new ArrayList<>();
+        // Preparar lista
         recyclerAnimes = findViewById(R.id.idRecyclerView);
+        recyclerAnimes.setHasFixedSize(true);
         recyclerAnimes.setLayoutManager(new LinearLayoutManager(this));
 
         selectAnimes();
-        adapterAnimes = new AdapterAnimes(listaAnimes);
+        adapterAnimes = new AdapterAnimes(this, this);
         recyclerAnimes.setAdapter(adapterAnimes);
-
         abrePerfilAnime(adapterAnimes);
     }
 
@@ -75,7 +79,7 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public boolean onQueryTextChange(String newText) {
-                //Separar la palabra del buscador
+               /* //Separar la palabra del buscador
                 newText = newText.toLowerCase();
                 ArrayList<Anime> listaFiltrada = new ArrayList<>();
                 for (Anime anime : listaAnimes) {
@@ -86,15 +90,15 @@ public class MainActivity extends AppCompatActivity {
                         // Si coincide con algun titulo, lo añadre a la lista filtrada
                         listaFiltrada.add(anime);
                     }
-                }
+                }*/
 
                 /* Si no se está  buscando nada se actualiza la lista actual
                  * sino se actualiza la lista filtrada. */
-                if (newText.isEmpty()){
+               /* if (newText.isEmpty()){
                     adapterAnimes.actualizarLista(listaAnimes);
                 } else {
                     adapterAnimes.actualizarLista(listaFiltrada);
-                }
+                }*/
 
                 return true;
             }
@@ -152,9 +156,9 @@ public class MainActivity extends AppCompatActivity {
             case R.id.action_anadir:
                 abreCrearAnime();
                 return true;
-            case R.id.action_favoritos:
+            /*case R.id.action_favoritos:
                 abreFavoritos();
-                return true;
+                return true;*/
             case R.id.action_llamar:
                 llamarTienda();
             default:
@@ -195,11 +199,11 @@ public class MainActivity extends AppCompatActivity {
     /**
      * Abre la actividad de Favoritos
      */
-    private void abreFavoritos() {
+   /* private void abreFavoritos() {
         Intent intent = new Intent(MainActivity.this, Favoritos.class);
         intent.putExtra("listaAnime", listaAnimes);
         startActivityForResult(intent, 103);
-    }
+    }*/
 
     /**
      * Guardar la informacion de las otras actividades
@@ -255,6 +259,27 @@ public class MainActivity extends AppCompatActivity {
         Toast.makeText(getApplicationContext(), mensaje, Toast.LENGTH_SHORT).show();
     }
 
+
+    @Override
+    public void onClick(AdapterAnimes.ViewHolder holder, int idPromocion) {
+
+    }
+
+    @NonNull
+    @Override
+    public Loader<Cursor> onCreateLoader(int id, @Nullable Bundle args) {
+        return null;
+    }
+
+    @Override
+    public void onLoadFinished(@NonNull Loader<Cursor> loader, Cursor data) {
+
+    }
+
+    @Override
+    public void onLoaderReset(@NonNull Loader<Cursor> loader) {
+
+    }
 
 
 }
