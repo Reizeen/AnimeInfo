@@ -57,7 +57,7 @@ public class AdapterAnimes extends RecyclerView.Adapter<AdapterAnimes.ViewHolder
     /**
      * Actuliza el Recycler si hay modificaciones
      */
-    public void setFilter(ArrayList<Anime> listaAnimes){
+    public void actualizarLista(ArrayList<Anime> listaAnimes){
          this.listaAnimes = new ArrayList<>();
          this.listaAnimes.addAll(listaAnimes);
          notifyDataSetChanged(); // Actualizar si hay cambios

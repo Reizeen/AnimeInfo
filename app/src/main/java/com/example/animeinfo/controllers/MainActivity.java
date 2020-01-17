@@ -25,7 +25,7 @@ import com.example.animeinfo.model.ConexionSQLiteHelper;
 
 import java.util.ArrayList;
 
-public class MainActivity extends AppCompatActivity implements SearchView.OnQueryTextListener {
+public class MainActivity extends AppCompatActivity {
 
     private AdapterAnimes adapterAnimes;
     private ArrayList<Anime> listaAnimes;
@@ -61,20 +61,36 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         MenuItem item = menu.findItem(R.id.action_buscar);
 
         // Asignar un SearchView al boton del action
-        SearchView search = (SearchView) MenuItemCompat.getActionView(item);
-        // Que el buscador escuche en este contesto
-        search.setOnQueryTextListener(this);
-        /* Los metodos sirven para cuando no tengamos ningun texto en el buscador la lsita de
-         * Animes quedará como estaba antes. */
-        MenuItemCompat.setOnActionExpandListener(item, new MenuItemCompat.OnActionExpandListener() {
+        SearchView search = (SearchView) item.getActionView();
+        search.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
-            public boolean onMenuItemActionExpand(MenuItem item) {
-                return true;
+            public boolean onQueryTextSubmit(String query) {
+                return false;
             }
 
             @Override
-            public boolean onMenuItemActionCollapse(MenuItem item) {
-                adapterAnimes.setFilter(listaAnimes);
+            public boolean onQueryTextChange(String newText) {
+                //Separar la palabra del buscador
+                newText = newText.toLowerCase();
+                ArrayList<Anime> listaFiltrada = new ArrayList<>();
+                for (Anime anime : listaAnimes) {
+                    // Separa el titulo del anime
+                    String tituloAnime = anime.getTitulo().toLowerCase();
+                    // Comparar los textos separados
+                    if (tituloAnime.contains(newText)) {
+                        // Si coincide con algun titulo, lo añadre a la lista filtrada
+                        listaFiltrada.add(anime);
+                    }
+                }
+
+                /* Si no se está  buscando nada se actualiza la lista actual
+                 * sino se actualiza la lista filtrada. */
+                if (newText.isEmpty()){
+                    adapterAnimes.actualizarLista(listaAnimes);
+                } else {
+                    adapterAnimes.actualizarLista(listaFiltrada);
+                }
+
                 return true;
             }
         });
@@ -234,52 +250,18 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         Toast.makeText(getApplicationContext(), mensaje, Toast.LENGTH_SHORT).show();
     }
 
+
+
     /***********************************************/
     /************** METODOS DEL BUSCADOR ***********/
     /***********************************************/
 
-    @Override
-    public boolean onQueryTextSubmit(String query) {
-        return false;
-    }
 
-    @Override
-    public boolean onQueryTextChange(String newText) {
-
-        try {
-            ArrayList<Anime> listaFiltrada = filter(listaAnimes, newText);
-            adapterAnimes.setFilter(listaFiltrada);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        return false;
-    }
 
     /**
      * FILTRADO DEL BUSCADOR
      * Si lo que tecleo se encuentra en la lista de animes lo agrego a una
      * lista donde muestre los animes que coinciden con lo buscado segun el titulo
      */
-    private ArrayList<Anime> filter(ArrayList<Anime> animes, String texto) {
-        ArrayList<Anime> listaFiltrada = new ArrayList<>();
 
-        try {
-            //Separar la palabra del buscador
-            texto = texto.toLowerCase();
-            for (Anime anime : animes) {
-                // Separa el titulo del anime
-                String tituloAnime = anime.getTitulo().toLowerCase();
-                // Comparar los textos separados
-                if (tituloAnime.contains(texto)) {
-                    // Si coincide con algun titulo, lo añadre a la lista filtrada
-                    listaFiltrada.add(anime);
-                }
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return listaFiltrada;
-    }
 }
