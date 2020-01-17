@@ -15,7 +15,6 @@ import java.util.ArrayList;
 public class AdapterAnimes extends RecyclerView.Adapter<AdapterAnimes.ViewHolderDatos>
                             implements View.OnClickListener {
 
-
     private ArrayList<Anime> listaAnimes;
     private View.OnClickListener listener;
 

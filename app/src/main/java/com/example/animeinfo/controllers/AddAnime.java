@@ -86,9 +86,12 @@ public class AddAnime extends AppCompatActivity {
      * Volver a la actividad con los datos insertados en el nuevo objeto
      */
     public void onVolver(View view) {
+        Intent intent = new Intent(getApplicationContext(), MainActivity.class);
         if (insertarAnime())
-            finish();
+            setResult(RESULT_OK, intent);
         else
             Toast.makeText(this, "Error al insertar los datos", Toast.LENGTH_SHORT);
+
+        finish();
     }
 }

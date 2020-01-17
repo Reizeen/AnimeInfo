@@ -12,7 +12,7 @@ public class Anime implements Serializable {
     private String url;
     private String info;
 
-    public Anime(int id, String titulo, String estreno, boolean favorito, int foto, String url, String info) {
+    public Anime(int id, String titulo, boolean favorito, String estreno,  int foto, String url, String info) {
         this.id = id;
         this.titulo = titulo;
         this.favorito = favorito;

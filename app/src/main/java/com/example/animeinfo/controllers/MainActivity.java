@@ -5,6 +5,7 @@ import androidx.core.view.MenuItemCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.content.ContentValues;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -43,6 +44,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         recyclerAnimes = findViewById(R.id.idRecyclerView);
         recyclerAnimes.setLayoutManager(new LinearLayoutManager(this));
 
+        selectAnimes();
         adapterAnimes = new AdapterAnimes(listaAnimes);
         recyclerAnimes.setAdapter(adapterAnimes);
 
@@ -83,8 +85,9 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     /**
      * Consultar los animes de la BD
      */
+    public void selectAnimes() {
+        listaAnimes.clear();
 
-    public void selectAnimes(){
         SQLiteDatabase db = conexion.getReadableDatabase();
         Cursor c = db.rawQuery("SELECT " +
                 AnimeConstantes.ID + ", " +
@@ -100,13 +103,27 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         if (c.moveToFirst()) {
             //Recorremos el cursor hasta que no haya más registros
             do {
-                // Crear un amime con las consulta y meterlo en el arrayList
-            } while(c.moveToNext());
+                int id = c.getInt(0);
+                String titulo = c.getString(1);
+                int numFav = c.getInt(2);
+                boolean fav;
+                if (numFav == 1)
+                    fav = true;
+                else
+                    fav = false;
+                String estreno = c.getString(3);
+                int foto = R.drawable.imagen_no_disponible_dos;
+                String url = c.getString(5);
+                String info = c.getString(6);
+
+                Anime anime = new Anime(id, titulo, fav, estreno, foto, url, info);
+                listaAnimes.add(anime);
+            } while (c.moveToNext());
         }
     }
 
     /**
-     *Metodo onClick del menu
+     * Metodo onClick del menu
      */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -134,7 +151,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     /**
      * Abre la actividad del perfil de un item del RecyclerView
      */
-    public void abrePerfilAnime(AdapterAnimes adapterAnimes){
+    public void abrePerfilAnime(AdapterAnimes adapterAnimes) {
         adapterAnimes.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -149,7 +166,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     /**
      * Abre la actividad del perfil de un item del RecyclerView
      */
-    public void abreCrearAnime(){
+    public void abreCrearAnime() {
         Intent intencion = new Intent(getApplicationContext(), AddAnime.class);
         startActivityForResult(intencion, 102);
     }
@@ -166,20 +183,56 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     /**
      * Guardar la informacion de las otras actividades
      */
-    public void onActivityResult(int requestCode, int resultCode, Intent code){
-        if (requestCode == 101 && resultCode == RESULT_OK){
+    public void onActivityResult(int requestCode, int resultCode, Intent code) {
+        if (requestCode == 101 && resultCode == RESULT_OK) {
             Anime animeMod = (Anime) code.getSerializableExtra("anime");
-            for (Anime anime : listaAnimes) {
-                if (anime.getId() == animeMod.getId()){
-                    anime.setFavorito(animeMod.getFavorito());
-                }
-            }
+            int operacionCode = code.getIntExtra("operacionCode", -1);
+
+            if (operacionCode == 0)
+                modificarFavorito(animeMod);
+            else if (operacionCode == -1)
+                eliminarAnime(animeMod);
+
         } else if (requestCode == 102 && resultCode == RESULT_OK) {
-            listaAnimes.clear();
             Toast.makeText(getApplicationContext(), "Anime insertado correctamente", Toast.LENGTH_SHORT).show();
         }
+
+        selectAnimes();
+        adapterAnimes.notifyDataSetChanged();
     }
 
+    /**
+     * Eliminar anime de la BD despues de volver del perifl
+     */
+    public void eliminarAnime(Anime animeMod) {
+
+        SQLiteDatabase db = conexion.getReadableDatabase();
+        db.execSQL("DELETE FROM " + AnimeConstantes.TABLA_ANIME + " WHERE " + AnimeConstantes.ID + " = " + animeMod.getId());
+        Toast.makeText(getApplicationContext(), "Anime eliminado correctamente", Toast.LENGTH_SHORT).show();
+
+    }
+
+    /**
+     * Modificar favorito de un anime en la BD despues de volver del perfil
+     */
+    public void modificarFavorito(Anime animeMod) {
+        int numFav;
+        String mensaje;
+        if (animeMod.getFavorito()) {
+            numFav = 1;
+            mensaje = "Anime añadido a favoritos";
+        } else {
+            numFav = 0;
+            mensaje = "Anime eliminado de favoritos";
+        }
+
+        //Actualizamos favorito en la base de datos
+        SQLiteDatabase db = conexion.getReadableDatabase();
+        ContentValues valores = new ContentValues();
+        valores.put(AnimeConstantes.FAVORITO, numFav);
+        db.update(AnimeConstantes.TABLA_ANIME, valores, AnimeConstantes.ID + " = " + animeMod.getId(), null);
+        Toast.makeText(getApplicationContext(), mensaje, Toast.LENGTH_SHORT).show();
+    }
 
     /***********************************************/
     /************** METODOS DEL BUSCADOR ***********/
@@ -196,7 +249,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         try {
             ArrayList<Anime> listaFiltrada = filter(listaAnimes, newText);
             adapterAnimes.setFilter(listaFiltrada);
-        } catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
@@ -204,27 +257,27 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     }
 
     /**
-     *  FILTRADO DEL BUSCADOR
-     *  Si lo que tecleo se encuentra en la lista de animes lo agrego a una
-     *  lista donde muestre los animes que coinciden con lo buscado segun el titulo
+     * FILTRADO DEL BUSCADOR
+     * Si lo que tecleo se encuentra en la lista de animes lo agrego a una
+     * lista donde muestre los animes que coinciden con lo buscado segun el titulo
      */
-    private ArrayList<Anime> filter(ArrayList<Anime> animes, String texto){
+    private ArrayList<Anime> filter(ArrayList<Anime> animes, String texto) {
         ArrayList<Anime> listaFiltrada = new ArrayList<>();
 
         try {
             //Separar la palabra del buscador
             texto = texto.toLowerCase();
-            for (Anime anime : animes){
+            for (Anime anime : animes) {
                 // Separa el titulo del anime
                 String tituloAnime = anime.getTitulo().toLowerCase();
                 // Comparar los textos separados
-                if (tituloAnime.contains(texto)){
+                if (tituloAnime.contains(texto)) {
                     // Si coincide con algun titulo, lo añadre a la lista filtrada
                     listaFiltrada.add(anime);
                 }
             }
 
-        } catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return listaFiltrada;
