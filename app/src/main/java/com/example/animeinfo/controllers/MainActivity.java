@@ -54,6 +54,11 @@ public class MainActivity extends AppCompatActivity {
     /**
      * Crear Menu del MainActivity
      * Crear Buscador para el menu
+     *
+     *  FILTRADO DEL BUSCADOR
+     *  Si lo que tecleo se encuentra en la lista de animes lo agrego a una
+     *  lista donde muestre los animes que coinciden con lo buscado segun el titulo
+     *
      */
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -251,17 +256,5 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-
-    /***********************************************/
-    /************** METODOS DEL BUSCADOR ***********/
-    /***********************************************/
-
-
-
-    /**
-     * FILTRADO DEL BUSCADOR
-     * Si lo que tecleo se encuentra en la lista de animes lo agrego a una
-     * lista donde muestre los animes que coinciden con lo buscado segun el titulo
-     */
 
 }

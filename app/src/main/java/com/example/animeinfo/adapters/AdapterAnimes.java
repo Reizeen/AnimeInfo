@@ -13,7 +13,7 @@ import com.example.animeinfo.model.Anime;
 import java.util.ArrayList;
 
 public class AdapterAnimes extends RecyclerView.Adapter<AdapterAnimes.ViewHolderDatos>
-                            implements View.OnClickListener {
+        implements View.OnClickListener {
 
     private ArrayList<Anime> listaAnimes;
     private View.OnClickListener listener;
@@ -58,9 +58,9 @@ public class AdapterAnimes extends RecyclerView.Adapter<AdapterAnimes.ViewHolder
      * Actuliza el Recycler si hay modificaciones
      */
     public void actualizarLista(ArrayList<Anime> listaAnimes){
-         this.listaAnimes = new ArrayList<>();
-         this.listaAnimes.addAll(listaAnimes);
-         notifyDataSetChanged(); // Actualizar si hay cambios
+        this.listaAnimes = new ArrayList<>();
+        this.listaAnimes.addAll(listaAnimes);
+        notifyDataSetChanged(); // Actualizar si hay cambios
     }
 
     public class ViewHolderDatos extends RecyclerView.ViewHolder {
