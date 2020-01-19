@@ -5,7 +5,7 @@ public class AnimeConstantes {
     // Constantes de los campos de la tabla Animes
     public static final String NOMBRE_DB = "AnimeDB";
     public static final String TABLA_ANIME = "Animes";
-    public static final String ID = "id";
+    public static final String ID = "_id";
     public static final String TITULO = "titulo";
     public static final String FAVORITO = "favorito";
     public static final String ESTRENO = "estreno";
