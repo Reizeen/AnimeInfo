@@ -7,6 +7,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ImageView;
@@ -36,13 +37,18 @@ public class PerfilAnime extends AppCompatActivity {
         foto = findViewById(R.id.idImagenPerfil);
 
         anime = (Anime) getIntent().getSerializableExtra("anime");
+        cargarDatosAnime();
+    }
 
+    /**
+     * Cargar datos del anime
+     */
+    public void cargarDatosAnime(){
         titulo.setText(anime.getTitulo());
         estreno.setText("Año de estreno: " + anime.getEstreno());
         info.setText(anime.getInfo());
         foto.setImageResource(anime.getFoto());
         fav = anime.getFavorito();
-
     }
 
     /**
@@ -83,12 +89,41 @@ public class PerfilAnime extends AppCompatActivity {
             case R.id.email:
                 enviarCorreo();
                 return true;
+            case R.id.modificar:
+                modificarAnime();
+                return true;
             case R.id.delete:
                 eliminarAnime();
+                return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
     }
+
+    /**
+     * Modificar Anime
+     */
+    public void modificarAnime(){
+        Intent intent = new Intent(getApplicationContext(), ModAnime.class);
+        intent.putExtra("anime", anime);
+        startActivityForResult(intent, 101);
+    }
+
+    /**
+     * Cargat datos del anime después de ser modificado
+     * @param requestCode
+     * @param resultCode
+     * @param code
+     */
+    public void onActivityResult(int requestCode, int resultCode, Intent code) {
+        if (requestCode == 101 && resultCode == RESULT_OK) {
+            Anime animeMod = (Anime) code.getSerializableExtra("anime");
+            anime = animeMod;
+            Log.i(null, "onActivityResult: " + animeMod.getTitulo());
+            cargarDatosAnime();
+        }
+    }
+
 
     /**
      * Eliminar Anime

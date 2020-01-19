@@ -1,111 +1,78 @@
 package com.example.animeinfo.adapters;
 
-import android.content.Context;
-import android.database.Cursor;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.animeinfo.R;
-import com.example.animeinfo.model.AnimeConstantes;
+import com.example.animeinfo.model.Anime;
 
-public class AdapterAnimes extends RecyclerView.Adapter<AdapterAnimes.ViewHolder> {
+import java.util.ArrayList;
 
-    private final Context contexto;
-    private Cursor items;
-    public OnItemClickListener escucha;
+public class AdapterAnimes extends RecyclerView.Adapter<AdapterAnimes.ViewHolderDatos>
+        implements View.OnClickListener {
 
-    public interface OnItemClickListener {
-        void onClick(ViewHolder holder, int idPromocion);
+    private ArrayList<Anime> listaAnimes;
+    private View.OnClickListener listener;
+
+    public AdapterAnimes(ArrayList<Anime> listaAnimes) {
+        this.listaAnimes = listaAnimes;
     }
 
-    public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+    @Override
+    public ViewHolderDatos onCreateViewHolder(ViewGroup parent, int viewType) {
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_list, null, false);
+        view.setOnClickListener(this);
+        return new ViewHolderDatos(view);
+    }
+
+    @Override
+    public void onBindViewHolder(ViewHolderDatos holder, int position) {
+        holder.nombreText.setText(listaAnimes.get(position).getTitulo());
+        holder.infoText.setText(listaAnimes.get(position).getInfo());
+        holder.fotoImage.setImageResource(listaAnimes.get(position).getFoto());
+    }
+
+    @Override
+    public int getItemCount() {
+        return listaAnimes.size();
+    }
+
+    /**
+     * Evento de seleccion
+     */
+    public void setOnClickListener(View.OnClickListener listener){
+        this.listener = listener;
+    }
+
+    @Override
+    public void onClick(View view) {
+        if (listener != null)
+            listener.onClick(view);
+    }
+
+    /**
+     * Actuliza el Recycler si hay modificaciones
+     */
+    public void actualizarLista(ArrayList<Anime> listaAnimes){
+        this.listaAnimes = new ArrayList<>();
+        this.listaAnimes.addAll(listaAnimes);
+        notifyDataSetChanged(); // Actualizar si hay cambios
+    }
+
+    public class ViewHolderDatos extends RecyclerView.ViewHolder {
+
         TextView nombreText, infoText;
         ImageView fotoImage;
 
-        public ViewHolder(View view) {
-            super(view);
+        public ViewHolderDatos(View itemView) {
+            super(itemView);
             nombreText = itemView.findViewById(R.id.idTitulo);
             infoText = itemView.findViewById(R.id.idInfo);
             fotoImage = itemView.findViewById(R.id.idImagen);
-            view.setOnClickListener(this);
         }
-
-        @Override
-        public void onClick(View view) {
-            escucha.onClick(this, obtenerIdAnime(getAdapterPosition()));
-        }
-    }
-
-    /**
-     * Retorna en el valor de la columna "ID" de la posición actual.
-     * Este método es muy útil a la hora de leer los eventos de click y mostrar detalles.
-     * @param posicion
-     * @return
-     */
-    private int obtenerIdAnime(int posicion) {
-        if (items != null) {
-            if (items.moveToPosition(posicion)) {
-                return items.getInt(AnimeConstantes.COLUMN_ID);
-            } else {
-                return -1;
-            }
-        } else {
-            return -1;
-        }
-    }
-
-    public AdapterAnimes(Context contexto, OnItemClickListener escucha) {
-        this.contexto = contexto;
-        this.escucha = escucha;
-    }
-
-    @Override
-    public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_list, parent, false);
-        return new ViewHolder(view);
-    }
-
-    @Override
-    public void onBindViewHolder(ViewHolder holder, int position) {
-        // Acceder a la posición del cursor dependiendo del parámetro position
-        items.moveToPosition(position);
-
-        // Asignación
-        holder.nombreText.setText(items.getString(AnimeConstantes.COLUMN_TITULO));
-        holder.infoText.setText(items.getString(AnimeConstantes.COLUMN_TITULO));
-        holder.fotoImage.setImageResource(items.getInt(AnimeConstantes.COLUMN_FOTO));
-    }
-
-    /**
-     * Obtener la cantidad de ítems con el método getCount() del cursor.
-     * @return
-     */
-    @Override
-    public int getItemCount() {
-        if (items != null)
-            return items.getCount();
-        return 0;
-    }
-
-    /**
-     * Intercambia el cursor actual por uno nuevo.
-     * @param nuevoCursor
-     */
-    public void swapCursor(Cursor nuevoCursor) {
-        if (nuevoCursor != null) {
-            items = nuevoCursor;
-            notifyDataSetChanged();
-        }
-    }
-
-    /**
-     * Retorna en el cursor actual para darle uso externo.
-     * @return
-     */
-    public Cursor getCursor() {
-        return items;
     }
 }

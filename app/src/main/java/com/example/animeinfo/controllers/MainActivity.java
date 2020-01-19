@@ -1,11 +1,7 @@
 package com.example.animeinfo.controllers;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.MenuItemCompat;
-import androidx.loader.app.LoaderManager;
-import androidx.loader.content.Loader;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -29,11 +25,11 @@ import com.example.animeinfo.model.ConexionSQLiteHelper;
 
 import java.util.ArrayList;
 
-public class MainActivity extends AppCompatActivity implements AdapterAnimes.OnItemClickListener, LoaderManager.LoaderCallbacks<Cursor> {
+public class MainActivity extends AppCompatActivity {
 
     private AdapterAnimes adapterAnimes;
+    private ArrayList<Anime> listaAnimes;
     private RecyclerView recyclerAnimes;
-    private LinearLayoutManager linearLayoutManager;
     private ConexionSQLiteHelper conexion;
 
     @Override
@@ -44,14 +40,14 @@ public class MainActivity extends AppCompatActivity implements AdapterAnimes.OnI
         // Creamos la base de datos
         conexion = new ConexionSQLiteHelper(this, AnimeConstantes.NOMBRE_DB, null, 1);
 
-        // Preparar lista
+        listaAnimes = new ArrayList<>();
         recyclerAnimes = findViewById(R.id.idRecyclerView);
-        recyclerAnimes.setHasFixedSize(true);
         recyclerAnimes.setLayoutManager(new LinearLayoutManager(this));
 
         selectAnimes();
-        adapterAnimes = new AdapterAnimes(this, this);
+        adapterAnimes = new AdapterAnimes(listaAnimes);
         recyclerAnimes.setAdapter(adapterAnimes);
+
         abrePerfilAnime(adapterAnimes);
     }
 
@@ -79,7 +75,7 @@ public class MainActivity extends AppCompatActivity implements AdapterAnimes.OnI
 
             @Override
             public boolean onQueryTextChange(String newText) {
-               /* //Separar la palabra del buscador
+                //Separar la palabra del buscador
                 newText = newText.toLowerCase();
                 ArrayList<Anime> listaFiltrada = new ArrayList<>();
                 for (Anime anime : listaAnimes) {
@@ -90,15 +86,15 @@ public class MainActivity extends AppCompatActivity implements AdapterAnimes.OnI
                         // Si coincide con algun titulo, lo añadre a la lista filtrada
                         listaFiltrada.add(anime);
                     }
-                }*/
+                }
 
                 /* Si no se está  buscando nada se actualiza la lista actual
                  * sino se actualiza la lista filtrada. */
-               /* if (newText.isEmpty()){
+                if (newText.isEmpty()){
                     adapterAnimes.actualizarLista(listaAnimes);
                 } else {
                     adapterAnimes.actualizarLista(listaFiltrada);
-                }*/
+                }
 
                 return true;
             }
@@ -117,8 +113,8 @@ public class MainActivity extends AppCompatActivity implements AdapterAnimes.OnI
         Cursor c = db.rawQuery("SELECT " +
                 AnimeConstantes.ID + ", " +
                 AnimeConstantes.TITULO + ", " +
-                AnimeConstantes.FAVORITO + ", " +
                 AnimeConstantes.ESTRENO + ", " +
+                AnimeConstantes.FAVORITO + ", " +
                 AnimeConstantes.FOTO + ", " +
                 AnimeConstantes.URL_WEB + ", " +
                 AnimeConstantes.INFO_DESCRIPCION + " " +
@@ -128,18 +124,20 @@ public class MainActivity extends AppCompatActivity implements AdapterAnimes.OnI
         if (c.moveToFirst()) {
             //Recorremos el cursor hasta que no haya más registros
             do {
-                int id = c.getInt(0);
-                String titulo = c.getString(1);
-                int numFav = c.getInt(2);
+                int id = c.getInt(AnimeConstantes.COLUMN_ID);
+                String titulo = c.getString(AnimeConstantes.COLUMN_TITULO);
+                String estreno = c.getString(AnimeConstantes.COLUMN_ESTRENO);
+                int numFav = c.getInt(AnimeConstantes.COLUMN_FAVORITO);
+
                 boolean fav;
                 if (numFav == 1)
                     fav = true;
                 else
                     fav = false;
-                String estreno = c.getString(3);
-                int foto = R.drawable.imagen_no_disponible_dos;
-                String url = c.getString(5);
-                String info = c.getString(6);
+
+                int foto = R.drawable.imagen_no_disponible_dos;/**********************/
+                String url = c.getString(AnimeConstantes.COLUMN_URL);
+                String info = c.getString(AnimeConstantes.COLUMN_DESCRIPCION);
 
                 Anime anime = new Anime(id, titulo, fav, estreno, foto, url, info);
                 listaAnimes.add(anime);
@@ -156,9 +154,9 @@ public class MainActivity extends AppCompatActivity implements AdapterAnimes.OnI
             case R.id.action_anadir:
                 abreCrearAnime();
                 return true;
-            /*case R.id.action_favoritos:
+            case R.id.action_favoritos:
                 abreFavoritos();
-                return true;*/
+                return true;
             case R.id.action_llamar:
                 llamarTienda();
             default:
@@ -189,7 +187,7 @@ public class MainActivity extends AppCompatActivity implements AdapterAnimes.OnI
     }
 
     /**
-     * Abre la actividad del perfil de un item del RecyclerView
+     * Abre la actividad de añadir un nuevo Anime
      */
     public void abreCrearAnime() {
         Intent intencion = new Intent(getApplicationContext(), AddAnime.class);
@@ -199,11 +197,11 @@ public class MainActivity extends AppCompatActivity implements AdapterAnimes.OnI
     /**
      * Abre la actividad de Favoritos
      */
-   /* private void abreFavoritos() {
+    private void abreFavoritos() {
         Intent intent = new Intent(MainActivity.this, Favoritos.class);
         intent.putExtra("listaAnime", listaAnimes);
         startActivityForResult(intent, 103);
-    }*/
+    }
 
     /**
      * Guardar la informacion de las otras actividades
@@ -259,27 +257,6 @@ public class MainActivity extends AppCompatActivity implements AdapterAnimes.OnI
         Toast.makeText(getApplicationContext(), mensaje, Toast.LENGTH_SHORT).show();
     }
 
-
-    @Override
-    public void onClick(AdapterAnimes.ViewHolder holder, int idPromocion) {
-
-    }
-
-    @NonNull
-    @Override
-    public Loader<Cursor> onCreateLoader(int id, @Nullable Bundle args) {
-        return null;
-    }
-
-    @Override
-    public void onLoadFinished(@NonNull Loader<Cursor> loader, Cursor data) {
-
-    }
-
-    @Override
-    public void onLoaderReset(@NonNull Loader<Cursor> loader) {
-
-    }
 
 
 }

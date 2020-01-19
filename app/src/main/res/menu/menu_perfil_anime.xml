@@ -12,18 +12,24 @@ xmlns:tools="http://schemas.android.com/tools" tools:context=".controllers.MainA
         app:showAsAction="always"
         android:title=""/>
 
-    <item android:id="@+id/delete"
-        android:icon="@drawable/delete"
-        app:showAsAction="ifRoom"
-        android:title="Eliminar"/>
-
     <item android:id="@+id/infoWeb"
         android:icon="@drawable/info"
         app:showAsAction="ifRoom"
         android:title="Más información"/>
 
     <item android:id="@+id/email"
+        android:icon="@drawable/email"
         app:showAsAction="ifRoom"
         android:title="Enviar correo"/>
+
+    <item android:id="@+id/modificar"
+        android:icon="@drawable/mod"
+        app:showAsAction="ifRoom"
+        android:title="Modificar"/>
+
+    <item android:id="@+id/delete"
+        android:icon="@drawable/delete"
+        app:showAsAction="ifRoom"
+        android:title="Eliminar"/>
 
 </menu>

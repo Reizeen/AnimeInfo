@@ -23,6 +23,8 @@ public class Favoritos extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_favoritos);
 
+        this.setTitle("Favoritos");
+
         listaAnimes = (ArrayList<Anime>) getIntent().getSerializableExtra("listaAnime");
         recyclerAnimes = findViewById(R.id.idRecyclerFavoritos);
         recyclerAnimes.setLayoutManager(new LinearLayoutManager(this));

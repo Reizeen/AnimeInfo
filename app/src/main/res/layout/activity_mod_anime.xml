@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
+
 <ScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -8,9 +9,12 @@
     android:fillViewport="true">
 
     <androidx.constraintlayout.widget.ConstraintLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:context=".controllers.AddAnime">
+        tools:context=".controllers.ModAnime">
 
         <LinearLayout
             android:id="@+id/linearLayout1"
@@ -36,7 +40,7 @@
                 android:onClick="subirImagen"/>
 
             <ImageView
-                android:id="@+id/imagenSubidaAdd"
+                android:id="@+id/imagenSubidaMod"
                 android:layout_width="100dp"
                 android:layout_height="100dp"
                 android:background="#000000"
@@ -78,7 +82,7 @@
             app:layout_constraintTop_toBottomOf="@+id/linearLayout2">
 
             <EditText
-                android:id="@+id/idTituloAdd"
+                android:id="@+id/idTituloMod"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:ems="10"
@@ -119,7 +123,7 @@
             app:layout_constraintTop_toBottomOf="@+id/linearLayout4">
 
             <EditText
-                android:id="@+id/idEstrenoAdd"
+                android:id="@+id/idEstrenoMod"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:ems="10"
@@ -160,7 +164,7 @@
             app:layout_constraintTop_toBottomOf="@+id/linearLayout6">
 
             <EditText
-                android:id="@+id/idFuenteAdd"
+                android:id="@+id/idFuenteMod"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:ems="10"
@@ -201,7 +205,7 @@
             app:layout_constraintTop_toBottomOf="@+id/linearLayout8">
 
             <EditText
-                android:id="@+id/idInfoAdd"
+                android:id="@+id/idInfoMod"
                 android:layout_width="match_parent"
                 android:layout_height="200dp"
                 android:background="#FFFFFF"
@@ -219,13 +223,12 @@
             android:layout_marginBottom="30dp"
             android:background="@color/colorPrimary"
             android:onClick="onVolver"
-            android:text="Insertar"
+            android:text="Modificar"
             android:textColor="#FFFFFF"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/linearLayout9" />
 
-
     </androidx.constraintlayout.widget.ConstraintLayout>
-    </ScrollView>
+</ScrollView>
