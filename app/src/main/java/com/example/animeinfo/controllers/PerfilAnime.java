@@ -23,7 +23,7 @@ public class PerfilAnime extends AppCompatActivity {
     private TextView titulo;
     private TextView info;
     private TextView estreno;
-    private ImageView foto;
+    private ImageView imagen;
     private boolean fav;
 
     @Override
@@ -34,7 +34,7 @@ public class PerfilAnime extends AppCompatActivity {
         titulo = findViewById(R.id.idTituloPerfil);
         estreno = findViewById(R.id.idEstrenoPerfil);
         info = findViewById(R.id.idInfoPerfil);
-        foto = findViewById(R.id.idImagenPerfil);
+        imagen = findViewById(R.id.idImagenPerfil);
 
         anime = (Anime) getIntent().getSerializableExtra("anime");
         cargarDatosAnime();
@@ -47,7 +47,8 @@ public class PerfilAnime extends AppCompatActivity {
         titulo.setText(anime.getTitulo());
         estreno.setText("Año de estreno: " + anime.getEstreno());
         info.setText(anime.getInfo());
-        foto.setImageResource(anime.getFoto());
+        Uri uri = Uri.parse(anime.getFoto());
+        imagen.setImageURI(uri);
         fav = anime.getFavorito();
     }
 

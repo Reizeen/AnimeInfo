@@ -7,7 +7,6 @@ import android.content.UriMatcher;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
-import android.provider.BaseColumns;
 
 public class AnimesProvider extends ContentProvider {
 
@@ -19,21 +18,6 @@ public class AnimesProvider extends ContentProvider {
 
     public static final Uri CONTENT_URI = Uri.parse(uri);
 
-
-    /**
-     * Existen columnas predefinidas en los content providers,
-     * por ejemplo la columna _ID.
-     * Esta clase interna sirve para declarar las constantes de
-     * las columnas que nos hacen falta.
-     */
-    public static final class Animes implements BaseColumns {
-        private Animes() {}
-
-        // Nombres de columnas
-        public static final String COL_TITULO = AnimeConstantes.TITULO;
-        public static final String COL_ESTRENO = AnimeConstantes.ESTRENO;
-        public static final String COL_DESCRIPCION = AnimeConstantes.INFO_DESCRIPCION;
-    }
 
     /**
      *  Definir varios atributos para almacenar la conexion y
@@ -62,7 +46,6 @@ public class AnimesProvider extends ContentProvider {
                 getContext(), AnimeConstantes.NOMBRE_DB, null, BD_VERSION);
         return true;
     }
-
 
     /**
      * Devuelve los datos solicitados según la URI indicada y los

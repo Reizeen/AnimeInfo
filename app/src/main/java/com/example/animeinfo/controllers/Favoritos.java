@@ -29,7 +29,7 @@ public class Favoritos extends AppCompatActivity {
         recyclerAnimes = findViewById(R.id.idRecyclerFavoritos);
         recyclerAnimes.setLayoutManager(new LinearLayoutManager(this));
 
-        adapterAnimes = new AdapterAnimes(animesFavoritos(listaAnimes));
+        //adapterAnimes = new AdapterAnimes(animesFavoritos(listaAnimes));
         recyclerAnimes.setAdapter(adapterAnimes);
     }
 

@@ -9,7 +9,7 @@ public class AnimeConstantes {
     public static final String TITULO = "titulo";
     public static final String FAVORITO = "favorito";
     public static final String ESTRENO = "estreno";
-    public static final String FOTO = "foto";
+    public static final String IMAGEN = "imagen";
     public static final String URL_WEB = "url";
     public static final String INFO_DESCRIPCION = "descripcion";
 
@@ -20,7 +20,7 @@ public class AnimeConstantes {
     public static final int COLUMN_TITULO = 1;
     public static final int COLUMN_ESTRENO = 2;
     public static final int COLUMN_FAVORITO = 3;
-    public static final int COLUMN_FOTO = 4;
+    public static final int COLUMN_IMAGEN = 4;
     public static final int COLUMN_URL = 5;
     public static final int COLUMN_DESCRIPCION = 6;
 
@@ -31,7 +31,7 @@ public class AnimeConstantes {
             TITULO + " TEXT, " +
             ESTRENO + " TEXT, " +
             FAVORITO + " INTEGER, " +
-            FOTO + " TEXT, " +
+            IMAGEN + " TEXT, " +
             URL_WEB + " TEXT, " +
             INFO_DESCRIPCION + " TEXT)";
     }

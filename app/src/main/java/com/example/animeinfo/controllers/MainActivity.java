@@ -1,7 +1,6 @@
 package com.example.animeinfo.controllers;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.view.MenuItemCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -44,8 +43,7 @@ public class MainActivity extends AppCompatActivity {
         recyclerAnimes = findViewById(R.id.idRecyclerView);
         recyclerAnimes.setLayoutManager(new LinearLayoutManager(this));
 
-        selectAnimes();
-        adapterAnimes = new AdapterAnimes(listaAnimes);
+        adapterAnimes = new AdapterAnimes(this, selectAnimes());
         recyclerAnimes.setAdapter(adapterAnimes);
 
         abrePerfilAnime(adapterAnimes);
@@ -91,9 +89,9 @@ public class MainActivity extends AppCompatActivity {
                 /* Si no se está  buscando nada se actualiza la lista actual
                  * sino se actualiza la lista filtrada. */
                 if (newText.isEmpty()){
-                    adapterAnimes.actualizarLista(listaAnimes);
+                    //adapterAnimes.actualizarLista(listaAnimes);
                 } else {
-                    adapterAnimes.actualizarLista(listaFiltrada);
+                   // adapterAnimes.actualizarLista(listaFiltrada);
                 }
 
                 return true;
@@ -106,43 +104,19 @@ public class MainActivity extends AppCompatActivity {
     /**
      * Consultar los animes de la BD
      */
-    public void selectAnimes() {
-        listaAnimes.clear();
-
+    public Cursor selectAnimes() {
         SQLiteDatabase db = conexion.getReadableDatabase();
         Cursor c = db.rawQuery("SELECT " +
                 AnimeConstantes.ID + ", " +
                 AnimeConstantes.TITULO + ", " +
                 AnimeConstantes.ESTRENO + ", " +
                 AnimeConstantes.FAVORITO + ", " +
-                AnimeConstantes.FOTO + ", " +
+                AnimeConstantes.IMAGEN + ", " +
                 AnimeConstantes.URL_WEB + ", " +
                 AnimeConstantes.INFO_DESCRIPCION + " " +
                 "FROM " + AnimeConstantes.TABLA_ANIME, null);
 
-        //Nos aseguramos de que existe al menos un registro
-        if (c.moveToFirst()) {
-            //Recorremos el cursor hasta que no haya más registros
-            do {
-                int id = c.getInt(AnimeConstantes.COLUMN_ID);
-                String titulo = c.getString(AnimeConstantes.COLUMN_TITULO);
-                String estreno = c.getString(AnimeConstantes.COLUMN_ESTRENO);
-                int numFav = c.getInt(AnimeConstantes.COLUMN_FAVORITO);
-
-                boolean fav;
-                if (numFav == 1)
-                    fav = true;
-                else
-                    fav = false;
-
-                int foto = R.drawable.imagen_no_disponible_dos;/**********************/
-                String url = c.getString(AnimeConstantes.COLUMN_URL);
-                String info = c.getString(AnimeConstantes.COLUMN_DESCRIPCION);
-
-                Anime anime = new Anime(id, titulo, fav, estreno, foto, url, info);
-                listaAnimes.add(anime);
-            } while (c.moveToNext());
-        }
+        return c;
     }
 
     /**
@@ -174,11 +148,11 @@ public class MainActivity extends AppCompatActivity {
     /**
      * Abre la actividad del perfil de un item del RecyclerView
      */
-    public void abrePerfilAnime(AdapterAnimes adapterAnimes) {
+    public void abrePerfilAnime(final AdapterAnimes adapterAnimes) {
         adapterAnimes.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Anime anime = listaAnimes.get(recyclerAnimes.getChildAdapterPosition(view));
+                Anime anime = adapterAnimes.obtenerAnime(recyclerAnimes.getChildAdapterPosition(view));
                 Intent intencion = new Intent(getApplicationContext(), PerfilAnime.class);
                 intencion.putExtra("anime", anime);
                 startActivityForResult(intencion, 101);
@@ -220,8 +194,7 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(getApplicationContext(), "Anime insertado correctamente", Toast.LENGTH_SHORT).show();
         }
 
-        selectAnimes();
-        adapterAnimes.notifyDataSetChanged();
+        adapterAnimes.swapCursor(selectAnimes());
     }
 
     /**

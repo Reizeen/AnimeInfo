@@ -7,17 +7,17 @@ public class Anime implements Serializable {
     private int id;
     private String titulo;
     private String estreno;
-    private int foto;
+    private String imagen;
     private boolean favorito;
     private String url;
     private String info;
 
-    public Anime(int id, String titulo, boolean favorito, String estreno,  int foto, String url, String info) {
+    public Anime(int id, String titulo, boolean favorito, String estreno,  String imagen, String url, String info) {
         this.id = id;
         this.titulo = titulo;
         this.favorito = favorito;
         this.estreno = estreno;
-        this.foto = foto;
+        this.imagen = imagen;
         this.url = url;
         this.info = info;
     }
@@ -46,12 +46,12 @@ public class Anime implements Serializable {
         this.info = info;
     }
 
-    public int getFoto() {
-        return foto;
+    public String getFoto() {
+        return imagen;
     }
 
     public void setFoto(int foto) {
-        this.foto = foto;
+        this.imagen = imagen;
     }
 
     public boolean getFavorito() {

@@ -54,7 +54,8 @@ public class ModAnime extends AppCompatActivity {
     public void cargarDatosAnime(){
         titulo.setText(anime.getTitulo());
         estreno.setText(anime.getEstreno());
-        imagen.setImageResource(anime.getFoto());
+        Uri uri = Uri.parse(anime.getFoto());
+        imagen.setImageURI(uri);
         url.setText(anime.getUrl());
         info.setText(anime.getInfo());
     }

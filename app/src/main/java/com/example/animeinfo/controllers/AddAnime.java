@@ -77,6 +77,7 @@ public class AddAnime extends AppCompatActivity {
         values.put(AnimeConstantes.TITULO, titulo.getText().toString());
         values.put(AnimeConstantes.ESTRENO, estreno.getText().toString());
         values.put(AnimeConstantes.FAVORITO, 0);
+        values.put(AnimeConstantes.IMAGEN,  Uri.parse("android.resource://com.example.animeinfo/" + R.drawable.imagen_no_disponible_dos).toString());
         values.put(AnimeConstantes.URL_WEB, url.getText().toString());
         values.put(AnimeConstantes.INFO_DESCRIPCION, info.getText().toString());
 
