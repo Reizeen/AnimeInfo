@@ -27,7 +27,6 @@ import java.util.ArrayList;
 public class MainActivity extends AppCompatActivity {
 
     private AdapterAnimes adapterAnimes;
-    private ArrayList<Anime> listaAnimes;
     private RecyclerView recyclerAnimes;
     private ConexionSQLiteHelper conexion;
 
@@ -36,10 +35,9 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // Creamos la base de datos
+        // Conectamos a la BD
         conexion = new ConexionSQLiteHelper(this, AnimeConstantes.NOMBRE_DB, null, 1);
 
-        listaAnimes = new ArrayList<>();
         recyclerAnimes = findViewById(R.id.idRecyclerView);
         recyclerAnimes.setLayoutManager(new LinearLayoutManager(this));
 
@@ -52,11 +50,6 @@ public class MainActivity extends AppCompatActivity {
     /**
      * Crear Menu del MainActivity
      * Crear Buscador para el menu
-     *
-     *  FILTRADO DEL BUSCADOR
-     *  Si lo que tecleo se encuentra en la lista de animes lo agrego a una
-     *  lista donde muestre los animes que coinciden con lo buscado segun el titulo
-     *
      */
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -75,34 +68,22 @@ public class MainActivity extends AppCompatActivity {
             public boolean onQueryTextChange(String newText) {
                 //Separar la palabra del buscador
                 newText = newText.toLowerCase();
-                ArrayList<Anime> listaFiltrada = new ArrayList<>();
-                for (Anime anime : listaAnimes) {
-                    // Separa el titulo del anime
-                    String tituloAnime = anime.getTitulo().toLowerCase();
-                    // Comparar los textos separados
-                    if (tituloAnime.contains(newText)) {
-                        // Si coincide con algun titulo, lo añadre a la lista filtrada
-                        listaFiltrada.add(anime);
-                    }
-                }
 
                 /* Si no se está  buscando nada se actualiza la lista actual
                  * sino se actualiza la lista filtrada. */
                 if (newText.isEmpty()){
-                    //adapterAnimes.actualizarLista(listaAnimes);
+                    adapterAnimes.swapCursor(selectAnimes());
                 } else {
-                   // adapterAnimes.actualizarLista(listaFiltrada);
+                    adapterAnimes.swapCursor(selectAnimesWhere(newText));
                 }
-
                 return true;
             }
         });
-
         return true;
     }
 
     /**
-     * Consultar los animes de la BD
+     * Consultar todos los animes de la BD
      */
     public Cursor selectAnimes() {
         SQLiteDatabase db = conexion.getReadableDatabase();
@@ -115,6 +96,25 @@ public class MainActivity extends AppCompatActivity {
                 AnimeConstantes.URL_WEB + ", " +
                 AnimeConstantes.INFO_DESCRIPCION + " " +
                 "FROM " + AnimeConstantes.TABLA_ANIME, null);
+
+        return c;
+    }
+
+    /**
+     * Consultar los animes de la BD segun el where
+     */
+    public Cursor selectAnimesWhere(String titulo) {
+        SQLiteDatabase db = conexion.getReadableDatabase();
+        Cursor c = db.rawQuery("SELECT " +
+                AnimeConstantes.ID + ", " +
+                AnimeConstantes.TITULO + ", " +
+                AnimeConstantes.ESTRENO + ", " +
+                AnimeConstantes.FAVORITO + ", " +
+                AnimeConstantes.IMAGEN + ", " +
+                AnimeConstantes.URL_WEB + ", " +
+                AnimeConstantes.INFO_DESCRIPCION +
+                " FROM " + AnimeConstantes.TABLA_ANIME +
+                " WHERE " + AnimeConstantes.TITULO + " LIKE('" + titulo + "%')", null);
 
         return c;
     }
@@ -173,7 +173,6 @@ public class MainActivity extends AppCompatActivity {
      */
     private void abreFavoritos() {
         Intent intent = new Intent(MainActivity.this, Favoritos.class);
-        intent.putExtra("listaAnime", listaAnimes);
         startActivityForResult(intent, 103);
     }
 
@@ -201,11 +200,9 @@ public class MainActivity extends AppCompatActivity {
      * Eliminar anime de la BD despues de volver del perifl
      */
     public void eliminarAnime(Anime animeMod) {
-
         SQLiteDatabase db = conexion.getReadableDatabase();
         db.execSQL("DELETE FROM " + AnimeConstantes.TABLA_ANIME + " WHERE " + AnimeConstantes.ID + " = " + animeMod.getId());
         Toast.makeText(getApplicationContext(), "Anime eliminado correctamente", Toast.LENGTH_SHORT).show();
-
     }
 
     /**
