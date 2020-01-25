@@ -1,13 +1,16 @@
 package com.example.animeinfo.controllers;
 
-import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.FileProvider;
 
 import android.content.ContentValues;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.provider.MediaStore;
 import android.view.View;
 import android.widget.EditText;
@@ -20,8 +23,17 @@ import com.example.animeinfo.model.Anime;
 import com.example.animeinfo.model.AnimeConstantes;
 import com.example.animeinfo.model.ConexionSQLiteHelper;
 
+import java.io.File;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 public class AddAnime extends AppCompatActivity {
 
+    private final int COD_GALERIA = 10;
+    private final int COD_CAMARA = 20;
+
+    private String absolutePathFoto;
     private ImageView imagen;
     private EditText estreno;
     private EditText url;
@@ -46,9 +58,49 @@ public class AddAnime extends AppCompatActivity {
      * Coger una imagen de la galeria
      */
     public void subirImagen(View view) {
-        Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-        intent.setType("image/");
-        startActivityForResult(intent.createChooser(intent, "Seleccione la aplicacion"), 10);
+
+        final CharSequence[] opciones = {"Tomar Foto", "Cargar Imagen", "Cancelar"};
+        final AlertDialog.Builder alertOpciones = new AlertDialog.Builder(this);
+        alertOpciones.setTitle("Selecciona una opción");
+        alertOpciones.setItems(opciones, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int op) {
+                if (opciones[op].equals("Tomar Foto")){
+                    Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                    File imagenCamara = null;
+                    try {
+                        imagenCamara = tomarFoto();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+
+                    if (imagenCamara != null){
+                        Uri imagenUri = FileProvider.getUriForFile(AddAnime.this, "com.example.animeinfo", imagenCamara);
+                        intent.putExtra(MediaStore.EXTRA_OUTPUT, imagenUri);
+                        startActivityForResult(intent, COD_CAMARA);
+                    }
+
+                } else if (opciones[op].equals("Cargar Imagen")){
+                    Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                    intent.setType("image/");
+                    startActivityForResult(intent.createChooser(intent, "Seleccione la aplicacion"), COD_GALERIA);
+                } else {
+                    dialog.dismiss();
+                }
+            }
+        });
+        alertOpciones.show();
+    }
+
+
+    private File tomarFoto() throws IOException {
+        String timeFoto = new SimpleDateFormat("yyyyMMdd HHmmss").format(new Date());
+        String nameFoto = "imagenAnimeInfo_" + timeFoto;
+
+        File storageFoto = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+        File fileFoto = File.createTempFile(nameFoto, ".jpg", storageFoto);
+        absolutePathFoto = fileFoto.getAbsolutePath();
+        return fileFoto;
     }
 
     /**
@@ -57,9 +109,11 @@ public class AddAnime extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (resultCode == RESULT_OK && requestCode == 10){
+        if (resultCode == RESULT_OK && requestCode == COD_GALERIA){
             Uri path = data.getData();
             imagen.setImageURI(path);
+        } else if (resultCode == RESULT_OK && requestCode == COD_CAMARA){
+            imagen.setImageURI(data.getData());
         }
     }
 

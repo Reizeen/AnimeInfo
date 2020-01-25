@@ -203,10 +203,9 @@ public class PerfilAnime extends AppCompatActivity {
     private void enviarCorreo() {
         String[] TO = {""};
         String[] CC = {""};
-        Intent emailIntent = new Intent(Intent.ACTION_SENDTO);
 
+        Intent emailIntent = new Intent(Intent.ACTION_SENDTO);
         emailIntent.setData(Uri.parse("mailto:"));
-        emailIntent.setType("text/plain");
         emailIntent.putExtra(Intent.EXTRA_EMAIL, TO);
         emailIntent.putExtra(Intent.EXTRA_CC, CC);
         emailIntent.putExtra(Intent.EXTRA_SUBJECT, "INFO ANIME");

@@ -6,6 +6,10 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.CALL_PHONE" />
 
+    <uses-feature
+        android:required="false"
+        android:name="android.hardware.camera2"/>
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -27,6 +31,17 @@
         <provider android:name=".model.AnimesProvider"
             android:authorities="com.example.animeinfo.contentproviders"
             android:exported="true"/>
+
+        <provider
+            android:authorities="com.example.animeinfo"
+            android:name="androidx.core.content.FileProvider"
+            android:exported="false"
+            android:grantUriPermissions="true" >
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_path"/>
+        </provider>
+
     </application>
 
 </manifest>
