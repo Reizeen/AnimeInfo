@@ -19,6 +19,8 @@ import com.example.animeinfo.model.Anime;
 
 public class PerfilAnime extends AppCompatActivity {
 
+    private final int COD_MODIFICAR = 101;
+
     private Anime anime;
     private TextView titulo;
     private TextView info;
@@ -107,7 +109,7 @@ public class PerfilAnime extends AppCompatActivity {
     public void modificarAnime(){
         Intent intent = new Intent(getApplicationContext(), ModAnime.class);
         intent.putExtra("anime", anime);
-        startActivityForResult(intent, 101);
+        startActivityForResult(intent, COD_MODIFICAR);
     }
 
     /**
@@ -117,7 +119,7 @@ public class PerfilAnime extends AppCompatActivity {
      * @param code
      */
     public void onActivityResult(int requestCode, int resultCode, Intent code) {
-        if (requestCode == 101 && resultCode == RESULT_OK) {
+        if (requestCode == COD_MODIFICAR && resultCode == RESULT_OK) {
             Anime animeMod = (Anime) code.getSerializableExtra("anime");
             anime = animeMod;
             Log.i(null, "onActivityResult: " + animeMod.getTitulo());

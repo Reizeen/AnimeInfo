@@ -8,6 +8,7 @@ import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -15,11 +16,8 @@ import android.provider.MediaStore;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.TextView;
 import android.widget.Toast;
-
 import com.example.animeinfo.R;
-import com.example.animeinfo.model.Anime;
 import com.example.animeinfo.model.AnimeConstantes;
 import com.example.animeinfo.model.ConexionSQLiteHelper;
 
@@ -30,10 +28,10 @@ import java.util.Date;
 
 public class AddAnime extends AppCompatActivity {
 
-    private final int COD_GALERIA = 10;
-    private final int COD_CAMARA = 20;
+    private static final int COD_GALERIA = 10;
+    private static final int COD_CAMARA = 20;
 
-    private String absolutePathFoto;
+    private String currentPhotoPath;
     private ImageView imagen;
     private EditText estreno;
     private EditText url;
@@ -55,10 +53,9 @@ public class AddAnime extends AppCompatActivity {
     }
 
     /**
-     * Coger una imagen de la galeria
+     * Evento onClick para subir una imagen desde la galeria o la camara
      */
     public void subirImagen(View view) {
-
         final CharSequence[] opciones = {"Tomar Foto", "Cargar Imagen", "Cancelar"};
         final AlertDialog.Builder alertOpciones = new AlertDialog.Builder(this);
         alertOpciones.setTitle("Selecciona una opción");
@@ -66,18 +63,25 @@ public class AddAnime extends AppCompatActivity {
             @Override
             public void onClick(DialogInterface dialog, int op) {
                 if (opciones[op].equals("Tomar Foto")){
-                    Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-                    File imagenCamara = null;
-                    try {
-                        imagenCamara = tomarFoto();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
+                    Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                    // Asegúrese de que haya una actividad de cámara para manejar la intención
+                    if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
+                        // Crea el archivo donde debe ir la foto
+                        File photoFile = null;
 
-                    if (imagenCamara != null){
-                        Uri imagenUri = FileProvider.getUriForFile(AddAnime.this, "com.example.animeinfo", imagenCamara);
-                        intent.putExtra(MediaStore.EXTRA_OUTPUT, imagenUri);
-                        startActivityForResult(intent, COD_CAMARA);
+                        try {
+                            photoFile = createImageFile();
+                        } catch (IOException e) {
+                            // Se produjo un error al crear el archivo
+                            e.printStackTrace();
+                        }
+
+                        // Continuar solo si el archivo se creó correctamente
+                        if (photoFile  != null) {
+                            Uri imagenUri = FileProvider.getUriForFile(AddAnime.this, "com.example.animeinfo.fileprovider", photoFile);
+                            takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, imagenUri);
+                            startActivityForResult(takePictureIntent, COD_CAMARA);
+                        }
                     }
 
                 } else if (opciones[op].equals("Cargar Imagen")){
@@ -93,14 +97,28 @@ public class AddAnime extends AppCompatActivity {
     }
 
 
-    private File tomarFoto() throws IOException {
-        String timeFoto = new SimpleDateFormat("yyyyMMdd HHmmss").format(new Date());
-        String nameFoto = "imagenAnimeInfo_" + timeFoto;
+    /**
+     * Crear archivo para almacenar la imagen
+     * Guardar la ruta donde se almacenará la imagen
+     * @return
+     * @throws IOException
+     */
+    private File createImageFile() throws IOException {
+        // Crear un nombre de archivo de imagen
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        String imageFileName = "JPEG_" + timeStamp + "_";
 
-        File storageFoto = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
-        File fileFoto = File.createTempFile(nameFoto, ".jpg", storageFoto);
-        absolutePathFoto = fileFoto.getAbsolutePath();
-        return fileFoto;
+        // Guardar imagen en la ruta indicada en el xml
+        File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+        File image = File.createTempFile(
+                imageFileName,  /* prefix */
+                ".jpg",         /* suffix */
+                storageDir      /* directory */
+        );
+
+        // Guardar un archivo: ruta para usar con ACTION_VIEW intents
+        currentPhotoPath = image.getAbsolutePath();
+        return image;
     }
 
     /**
@@ -110,10 +128,10 @@ public class AddAnime extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == RESULT_OK && requestCode == COD_GALERIA){
-            Uri path = data.getData();
-            imagen.setImageURI(path);
-        } else if (resultCode == RESULT_OK && requestCode == COD_CAMARA){
             imagen.setImageURI(data.getData());
+        } else if (resultCode == RESULT_OK && requestCode == COD_CAMARA){
+            File rutaImagen = new File(currentPhotoPath);
+            imagen.setImageURI(Uri.fromFile(rutaImagen));
         }
     }
 

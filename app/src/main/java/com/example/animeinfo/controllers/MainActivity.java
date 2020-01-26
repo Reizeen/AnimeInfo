@@ -1,14 +1,19 @@
 package com.example.animeinfo.controllers;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.Manifest;
 import android.content.ContentValues;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -22,9 +27,10 @@ import com.example.animeinfo.model.Anime;
 import com.example.animeinfo.model.AnimeConstantes;
 import com.example.animeinfo.model.ConexionSQLiteHelper;
 
-import java.util.ArrayList;
-
 public class MainActivity extends AppCompatActivity {
+
+    private final int COD_PERFIL = 10;
+    private final int CODE_PERMISOS = 20;
 
     private AdapterAnimes adapterAnimes;
     private RecyclerView recyclerAnimes;
@@ -34,6 +40,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        solicitarPermisos();
 
         // Conectamos a la BD
         conexion = new ConexionSQLiteHelper(this, AnimeConstantes.NOMBRE_DB, null, 1);
@@ -45,6 +53,27 @@ public class MainActivity extends AppCompatActivity {
         recyclerAnimes.setAdapter(adapterAnimes);
 
         abrePerfilAnime(adapterAnimes);
+    }
+
+    /**
+     * Solicitar permisos al usuario
+     */
+    public void solicitarPermisos(){
+        int permisoEscritura = ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        int permisoLectura = ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.READ_EXTERNAL_STORAGE);
+        int permisoTelefono = ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.CALL_PHONE);
+        int permisoCamara = ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.CAMERA);
+
+        if (permisoEscritura != PackageManager.PERMISSION_GRANTED || permisoLectura != PackageManager.PERMISSION_GRANTED ||
+                permisoTelefono != PackageManager.PERMISSION_GRANTED || permisoCamara!= PackageManager.PERMISSION_GRANTED) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
+                requestPermissions(new String[]{
+                        Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                        Manifest.permission.READ_EXTERNAL_STORAGE,
+                        Manifest.permission.CALL_PHONE, Manifest.permission.CAMERA},
+                        CODE_PERMISOS);
+            }
+        }
     }
 
     /**
@@ -155,7 +184,7 @@ public class MainActivity extends AppCompatActivity {
                 Anime anime = adapterAnimes.obtenerAnime(recyclerAnimes.getChildAdapterPosition(view));
                 Intent intencion = new Intent(getApplicationContext(), PerfilAnime.class);
                 intencion.putExtra("anime", anime);
-                startActivityForResult(intencion, 101);
+                startActivityForResult(intencion, COD_PERFIL);
             }
         });
     }
@@ -180,7 +209,7 @@ public class MainActivity extends AppCompatActivity {
      * Guardar la informacion de las otras actividades
      */
     public void onActivityResult(int requestCode, int resultCode, Intent code) {
-        if (requestCode == 101 && resultCode == RESULT_OK) {
+        if (requestCode == COD_PERFIL && resultCode == RESULT_OK) {
             Anime animeMod = (Anime) code.getSerializableExtra("anime");
             int operacionCode = code.getIntExtra("operacionCode", -1);
 
