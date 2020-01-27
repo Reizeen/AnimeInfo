@@ -5,6 +5,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -18,6 +20,8 @@ import com.example.animeinfo.R;
 import com.example.animeinfo.model.Anime;
 import com.example.animeinfo.model.AnimeConstantes;
 import com.example.animeinfo.model.ConexionSQLiteHelper;
+
+import java.io.ByteArrayInputStream;
 
 public class ModAnime extends AppCompatActivity {
 
@@ -54,8 +58,11 @@ public class ModAnime extends AppCompatActivity {
     public void cargarDatosAnime(){
         titulo.setText(anime.getTitulo());
         estreno.setText(anime.getEstreno());
-        Uri uri = Uri.parse(anime.getFoto());
-        imagen.setImageURI(uri);
+
+        ByteArrayInputStream bais = new ByteArrayInputStream(anime.getFoto());
+        Bitmap foto = BitmapFactory.decodeStream(bais);
+        imagen.setImageBitmap(foto);
+
         url.setText(anime.getUrl());
         info.setText(anime.getInfo());
     }

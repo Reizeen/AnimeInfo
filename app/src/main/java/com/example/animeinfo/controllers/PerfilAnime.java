@@ -5,6 +5,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
@@ -16,6 +18,9 @@ import android.widget.Toast;
 
 import com.example.animeinfo.R;
 import com.example.animeinfo.model.Anime;
+import com.example.animeinfo.model.AnimeConstantes;
+
+import java.io.ByteArrayInputStream;
 
 public class PerfilAnime extends AppCompatActivity {
 
@@ -49,8 +54,11 @@ public class PerfilAnime extends AppCompatActivity {
         titulo.setText(anime.getTitulo());
         estreno.setText("Año de estreno: " + anime.getEstreno());
         info.setText(anime.getInfo());
-        Uri uri = Uri.parse(anime.getFoto());
-        imagen.setImageURI(uri);
+
+        ByteArrayInputStream bais = new ByteArrayInputStream(anime.getFoto());
+        Bitmap foto = BitmapFactory.decodeStream(bais);
+        imagen.setImageBitmap(foto);
+
         fav = anime.getFavorito();
     }
 

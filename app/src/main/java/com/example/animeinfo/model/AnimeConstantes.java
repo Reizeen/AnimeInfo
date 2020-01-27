@@ -31,7 +31,7 @@ public class AnimeConstantes {
             TITULO + " TEXT, " +
             ESTRENO + " TEXT, " +
             FAVORITO + " INTEGER, " +
-            IMAGEN + " TEXT, " +
+            IMAGEN + " BLOB, " +
             URL_WEB + " TEXT, " +
             INFO_DESCRIPCION + " TEXT)";
     }

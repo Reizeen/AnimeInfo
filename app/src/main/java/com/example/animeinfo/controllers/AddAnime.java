@@ -9,9 +9,11 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.ParcelFileDescriptor;
 import android.provider.MediaStore;
 import android.view.View;
 import android.widget.EditText;
@@ -21,7 +23,10 @@ import com.example.animeinfo.R;
 import com.example.animeinfo.model.AnimeConstantes;
 import com.example.animeinfo.model.ConexionSQLiteHelper;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileDescriptor;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -29,9 +34,10 @@ import java.util.Date;
 public class AddAnime extends AppCompatActivity {
 
     private static final int COD_GALERIA = 10;
-    private static final int COD_CAMARA = 20;
+    private static final int COD_CAMARA = 2;
 
     private String currentPhotoPath;
+    private Bitmap bitmap;
     private ImageView imagen;
     private EditText estreno;
     private EditText url;
@@ -98,6 +104,7 @@ public class AddAnime extends AppCompatActivity {
 
 
     /**
+     * Metodo para tomar la foto
      * Crear archivo para almacenar la imagen
      * Guardar la ruta donde se almacenará la imagen
      * @return
@@ -106,7 +113,7 @@ public class AddAnime extends AppCompatActivity {
     private File createImageFile() throws IOException {
         // Crear un nombre de archivo de imagen
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-        String imageFileName = "JPEG_" + timeStamp + "_";
+        String imageFileName = "IMG_" + timeStamp + "_";
 
         // Guardar imagen en la ruta indicada en el xml
         File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
@@ -122,16 +129,61 @@ public class AddAnime extends AppCompatActivity {
     }
 
     /**
+     * Crear bitmap de la imagen de la galeria
+     * mediante su URI
+     * @param uri
+     * @throws IOException
+     */
+    public Bitmap getBitmapFromUri(Uri uri) throws IOException {
+        ParcelFileDescriptor parcelFileDescriptor = getContentResolver().openFileDescriptor(uri, "r");
+        FileDescriptor fileDescriptor = parcelFileDescriptor.getFileDescriptor();
+        Bitmap imageGallery = BitmapFactory.decodeFileDescriptor(fileDescriptor);
+        parcelFileDescriptor.close();
+        return imageGallery;
+    }
+
+    /**
+     * Darle tamaño a la imagen
+     * @param bitmap
+     * @return
+     */
+    public Bitmap escalarImagen(Bitmap bitmap){
+        float alto = 0;
+        float ancho = 0;
+        float factor = 0;
+
+        if(bitmap.getWidth() > bitmap.getHeight()){
+            factor = bitmap.getWidth() / bitmap.getHeight();
+            ancho = 400;
+            alto = ancho / factor;
+        } else {
+            factor = bitmap.getHeight() / bitmap.getWidth();
+            alto = 400;
+            ancho = alto / factor;
+        }
+
+        return Bitmap.createScaledBitmap(bitmap, (int)ancho, (int)alto, true);
+    }
+
+
+    /**
      * Cargar la imagen de la galeria en la actividad
      */
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == RESULT_OK && requestCode == COD_GALERIA){
-            imagen.setImageURI(data.getData());
+            bitmap = null;
+            try {
+                bitmap = getBitmapFromUri(data.getData());
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            imagen.setImageBitmap(escalarImagen(bitmap));
         } else if (resultCode == RESULT_OK && requestCode == COD_CAMARA){
-            File rutaImagen = new File(currentPhotoPath);
-            imagen.setImageURI(Uri.fromFile(rutaImagen));
+            bitmap = BitmapFactory.decodeFile(currentPhotoPath);
+            imagen.setImageBitmap(escalarImagen(bitmap));
         }
     }
 
@@ -141,6 +193,11 @@ public class AddAnime extends AppCompatActivity {
      * @return
      */
     public Boolean insertarAnime(){
+        // Convertir Bitmap en Blob
+        ByteArrayOutputStream baos = new ByteArrayOutputStream(20480);
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 0 , baos);
+        byte[] blob = baos.toByteArray();
+
         ConexionSQLiteHelper conn = new ConexionSQLiteHelper(this, AnimeConstantes.NOMBRE_DB, null, 1);
 
         // Poder escribir en la base de datod
@@ -149,7 +206,7 @@ public class AddAnime extends AppCompatActivity {
         values.put(AnimeConstantes.TITULO, titulo.getText().toString());
         values.put(AnimeConstantes.ESTRENO, estreno.getText().toString());
         values.put(AnimeConstantes.FAVORITO, 0);
-        values.put(AnimeConstantes.IMAGEN,  Uri.parse("android.resource://com.example.animeinfo/" + R.drawable.imagen_no_disponible_dos).toString());
+        values.put(AnimeConstantes.IMAGEN, blob);
         values.put(AnimeConstantes.URL_WEB, url.getText().toString());
         values.put(AnimeConstantes.INFO_DESCRIPCION, info.getText().toString());
 

@@ -2,6 +2,8 @@ package com.example.animeinfo.adapters;
 
 import android.content.Context;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -13,6 +15,9 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.animeinfo.R;
 import com.example.animeinfo.model.Anime;
 import com.example.animeinfo.model.AnimeConstantes;
+
+import java.io.ByteArrayInputStream;
+import java.sql.Blob;
 
 public class AdapterAnimes
         extends RecyclerView.Adapter<AdapterAnimes.ViewHolder>
@@ -70,11 +75,11 @@ public class AdapterAnimes
                 else
                     fav = false;
 
-                String foto = items.getString(AnimeConstantes.COLUMN_IMAGEN);
+                byte[] blob = items.getBlob(AnimeConstantes.COLUMN_IMAGEN);
                 String url = items.getString(AnimeConstantes.COLUMN_URL);
                 String info = items.getString(AnimeConstantes.COLUMN_DESCRIPCION);
 
-                Anime anime = new Anime(id, titulo, fav, estreno, foto, url, info);
+                Anime anime = new Anime(id, titulo, fav, estreno, blob, url, info);
                 return anime;
 
             } else {
@@ -114,8 +119,11 @@ public class AdapterAnimes
         // Asignación
         holder.nombreText.setText(items.getString(AnimeConstantes.COLUMN_TITULO));
         holder.infoText.setText(items.getString(AnimeConstantes.COLUMN_TITULO));
-        Uri uri = Uri.parse(items.getString(AnimeConstantes.COLUMN_IMAGEN));
-        holder.fotoImage.setImageURI(uri);
+
+        byte[] blob = items.getBlob(AnimeConstantes.COLUMN_IMAGEN);
+        ByteArrayInputStream bais = new ByteArrayInputStream(blob);
+        Bitmap foto = BitmapFactory.decodeStream(bais);
+        holder.fotoImage.setImageBitmap(foto);
     }
 
 

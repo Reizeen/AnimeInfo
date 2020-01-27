@@ -1,5 +1,7 @@
 package com.example.animeinfo.model;
 
+import android.graphics.Bitmap;
+
 import java.io.Serializable;
 
 public class Anime implements Serializable {
@@ -7,12 +9,12 @@ public class Anime implements Serializable {
     private int id;
     private String titulo;
     private String estreno;
-    private String imagen;
+    private byte[] imagen;
     private boolean favorito;
     private String url;
     private String info;
 
-    public Anime(int id, String titulo, boolean favorito, String estreno,  String imagen, String url, String info) {
+    public Anime(int id, String titulo, boolean favorito, String estreno, byte[] imagen, String url, String info) {
         this.id = id;
         this.titulo = titulo;
         this.favorito = favorito;
@@ -46,11 +48,11 @@ public class Anime implements Serializable {
         this.info = info;
     }
 
-    public String getFoto() {
+    public byte[] getFoto() {
         return imagen;
     }
 
-    public void setFoto(int foto) {
+    public void setFoto(byte[] imagen) {
         this.imagen = imagen;
     }
 
