@@ -15,6 +15,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.ParcelFileDescriptor;
 import android.provider.MediaStore;
+import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -37,7 +38,7 @@ public class AddAnime extends AppCompatActivity {
     private static final int COD_CAMARA = 2;
 
     private String currentPhotoPath;
-    private Bitmap bitmap;
+    private Bitmap bitmapEscalado;
     private ImageView imagen;
     private EditText estreno;
     private EditText url;
@@ -119,7 +120,7 @@ public class AddAnime extends AppCompatActivity {
         File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
         File image = File.createTempFile(
                 imageFileName,  /* prefix */
-                ".jpg",         /* suffix */
+                ".png",         /* suffix */
                 storageDir      /* directory */
         );
 
@@ -148,20 +149,22 @@ public class AddAnime extends AppCompatActivity {
      * @return
      */
     public Bitmap escalarImagen(Bitmap bitmap){
-        float alto = 0;
-        float ancho = 0;
-        float factor = 0;
+        double alto = 0;
+        double ancho = 0;
+        double factor = 0;
 
-        if(bitmap.getWidth() > bitmap.getHeight()){
-            factor = bitmap.getWidth() / bitmap.getHeight();
-            ancho = 400;
-            alto = ancho / factor;
-        } else {
-            factor = bitmap.getHeight() / bitmap.getWidth();
+        Log.i(null, "escalarImagen: ----------------------" + bitmap.getWidth() + " x " + bitmap.getHeight());
+        if(bitmap.getHeight() > bitmap.getWidth()){
+            factor = (double)bitmap.getHeight() / (double)bitmap.getWidth();
             alto = 400;
             ancho = alto / factor;
+        } else {
+            factor = (double)bitmap.getWidth() / (double)bitmap.getHeight();
+            Log.i(null, "escalarImagen: ----------------------" + factor);
+            ancho = 400;
+            alto = ancho / factor;
         }
-
+        Log.i(null, "escalarImagen: ----------------------" + ancho + " x " + alto);
         return Bitmap.createScaledBitmap(bitmap, (int)ancho, (int)alto, true);
     }
 
@@ -173,31 +176,44 @@ public class AddAnime extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == RESULT_OK && requestCode == COD_GALERIA){
-            bitmap = null;
+            Bitmap bitmap = null;
             try {
                 bitmap = getBitmapFromUri(data.getData());
 
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            imagen.setImageBitmap(escalarImagen(bitmap));
+            bitmapEscalado = escalarImagen(bitmap);
+            imagen.setImageBitmap(bitmapEscalado);
         } else if (resultCode == RESULT_OK && requestCode == COD_CAMARA){
-            bitmap = BitmapFactory.decodeFile(currentPhotoPath);
-            imagen.setImageBitmap(escalarImagen(bitmap));
+            Bitmap bitmap = BitmapFactory.decodeFile(currentPhotoPath);
+            bitmapEscalado = escalarImagen(bitmap);
+            imagen.setImageBitmap(bitmapEscalado);
         }
     }
 
 
     /**
+     * Convertir el bitmap de la imagen a BLOB
      * Insertar el nuevo anime en la BD
      * @return
      */
     public Boolean insertarAnime(){
-        // Convertir Bitmap en Blob
-        ByteArrayOutputStream baos = new ByteArrayOutputStream(20480);
-        bitmap.compress(Bitmap.CompressFormat.JPEG, 0 , baos);
-        byte[] blob = baos.toByteArray();
+        byte[] blob;
+        ByteArrayOutputStream baos = new ByteArrayOutputStream(175000);
 
+        /* Si el bitmapEscalado no se ha producido por no insertar una imagen
+         * establece una imagen por defecto.
+         */
+        if (bitmapEscalado == null){
+            Bitmap bitmp = BitmapFactory.decodeResource(getResources(), R.drawable.imagen_no_disponible);
+            Bitmap bitmpEscladoDefecto = escalarImagen(bitmp);
+            bitmpEscladoDefecto.compress(Bitmap.CompressFormat.PNG, 0 , baos);
+        } else {
+            bitmapEscalado.compress(Bitmap.CompressFormat.PNG, 0 , baos);
+        }
+
+        blob = baos.toByteArray();
         ConexionSQLiteHelper conn = new ConexionSQLiteHelper(this, AnimeConstantes.NOMBRE_DB, null, 1);
 
         // Poder escribir en la base de datod
