@@ -55,8 +55,7 @@ public class MainActivity extends AppCompatActivity {
         recyclerAnimes = findViewById(R.id.idRecyclerView);
         recyclerAnimes.setLayoutManager(new LinearLayoutManager(this));
 
-        adapterAnimes = new AdapterAnimes(this, selectAnimes());
-
+        adapterAnimes = new AdapterAnimes(this, selectAnimes(""));
         if (adapterAnimes.getItemCount() != 0){
             iniciarAsyncTask();
             recyclerAnimes.setAdapter(adapterAnimes);
@@ -110,9 +109,10 @@ public class MainActivity extends AppCompatActivity {
                 /* Si no se está  buscando nada se actualiza la lista actual
                  * sino se actualiza la lista filtrada. */
                 if (newText.isEmpty()){
-                    adapterAnimes.swapCursor(selectAnimes());
+                    adapterAnimes.swapCursor(selectAnimes(""));
                 } else {
-                    adapterAnimes.swapCursor(selectAnimesWhere(newText));
+                    String where = " WHERE " + AnimeConstantes.TITULO + " LIKE('" + newText + "%')";
+                    adapterAnimes.swapCursor(selectAnimes(where));
                 }
                 return true;
             }
@@ -121,9 +121,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * Consultar todos los animes de la BD
+     * Consultar todos los animes de la BD o
+     * consultarlos según el where para el buscador
      */
-    public Cursor selectAnimes() {
+    public Cursor selectAnimes(String where) {
         SQLiteDatabase db = conexion.getReadableDatabase();
         Cursor c = db.rawQuery("SELECT " +
                 AnimeConstantes.ID + ", " +
@@ -133,27 +134,7 @@ public class MainActivity extends AppCompatActivity {
                 AnimeConstantes.IMAGEN + ", " +
                 AnimeConstantes.URL_WEB + ", " +
                 AnimeConstantes.INFO_DESCRIPCION + " " +
-                "FROM " + AnimeConstantes.TABLA_ANIME, null);
-
-        return c;
-    }
-
-    /**
-     * Consultar los animes de la BD segun el where
-     * utilizado para el buscador
-     */
-    public Cursor selectAnimesWhere(String titulo) {
-        SQLiteDatabase db = conexion.getReadableDatabase();
-        Cursor c = db.rawQuery("SELECT " +
-                AnimeConstantes.ID + ", " +
-                AnimeConstantes.TITULO + ", " +
-                AnimeConstantes.ESTRENO + ", " +
-                AnimeConstantes.FAVORITO + ", " +
-                AnimeConstantes.IMAGEN + ", " +
-                AnimeConstantes.URL_WEB + ", " +
-                AnimeConstantes.INFO_DESCRIPCION +
-                " FROM " + AnimeConstantes.TABLA_ANIME +
-                " WHERE " + AnimeConstantes.TITULO + " LIKE('" + titulo + "%')", null);
+                "FROM " + AnimeConstantes.TABLA_ANIME + where, null);
 
         return c;
     }
@@ -232,7 +213,7 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(getApplicationContext(), "Anime insertado correctamente", Toast.LENGTH_SHORT).show();
         }
 
-        adapterAnimes.swapCursor(selectAnimes());
+        adapterAnimes.swapCursor(selectAnimes(""));
         iniciarAsyncTask();
     }
 
@@ -266,8 +247,6 @@ public class MainActivity extends AppCompatActivity {
         db.update(AnimeConstantes.TABLA_ANIME, valores, AnimeConstantes.ID + " = " + animeMod.getId(), null);
         Toast.makeText(getApplicationContext(), mensaje, Toast.LENGTH_SHORT).show();
     }
-
-
 
 
 
