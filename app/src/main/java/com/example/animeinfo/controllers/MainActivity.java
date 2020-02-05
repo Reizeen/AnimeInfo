@@ -2,7 +2,6 @@ package com.example.animeinfo.controllers;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -34,6 +33,7 @@ public class MainActivity extends AppCompatActivity {
 
     private final int COD_PERFIL = 10;
     private final int CODE_PERMISOS = 20;
+    private final int SEGUNDOS_ESPERA = 10;
 
     private AdapterAnimes adapterAnimes;
     private RecyclerView recyclerAnimes;
@@ -55,12 +55,7 @@ public class MainActivity extends AppCompatActivity {
         recyclerAnimes = findViewById(R.id.idRecyclerView);
         recyclerAnimes.setLayoutManager(new LinearLayoutManager(this));
 
-        adapterAnimes = new AdapterAnimes(this, selectAnimes(""));
-        if (adapterAnimes.getItemCount() != 0){
-            iniciarAsyncTask();
-            recyclerAnimes.setAdapter(adapterAnimes);
-            abrePerfilAnime(adapterAnimes);
-        }
+        iniciarAsyncTask();
     }
 
     /**
@@ -121,25 +116,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * Consultar todos los animes de la BD o
-     * consultarlos según el where para el buscador
-     */
-    public Cursor selectAnimes(String where) {
-        SQLiteDatabase db = conexion.getReadableDatabase();
-        Cursor c = db.rawQuery("SELECT " +
-                AnimeConstantes.ID + ", " +
-                AnimeConstantes.TITULO + ", " +
-                AnimeConstantes.ESTRENO + ", " +
-                AnimeConstantes.FAVORITO + ", " +
-                AnimeConstantes.IMAGEN + ", " +
-                AnimeConstantes.URL_WEB + ", " +
-                AnimeConstantes.INFO_DESCRIPCION + " " +
-                "FROM " + AnimeConstantes.TABLA_ANIME + where, null);
-
-        return c;
-    }
-
-    /**
      * Metodo onClick del menu
      */
     @Override
@@ -163,21 +139,6 @@ public class MainActivity extends AppCompatActivity {
      */
     private void llamarTienda() {
         startActivity(new Intent(Intent.ACTION_DIAL, Uri.parse("tel:672629147")));
-    }
-
-    /**
-     * Abre la actividad del perfil de un item del RecyclerView
-     */
-    public void abrePerfilAnime(final AdapterAnimes adapterAnimes) {
-        adapterAnimes.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Anime anime = adapterAnimes.obtenerAnime(recyclerAnimes.getChildAdapterPosition(view));
-                Intent intencion = new Intent(getApplicationContext(), PerfilAnime.class);
-                intencion.putExtra("anime", anime);
-                startActivityForResult(intencion, COD_PERFIL);
-            }
-        });
     }
 
     /**
@@ -214,7 +175,6 @@ public class MainActivity extends AppCompatActivity {
         }
 
         adapterAnimes.swapCursor(selectAnimes(""));
-        iniciarAsyncTask();
     }
 
     /**
@@ -249,11 +209,43 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-
-
     /** ==================================================================
      *  ==================== FUNCIONALIDAD AsyncTask =====================
      *  ================================================================== /
+
+     /**
+     * Consultar todos los animes de la BD o
+     * consultarlos según el where para el buscador
+     */
+    public Cursor selectAnimes(String where) {
+        SQLiteDatabase db = conexion.getReadableDatabase();
+        Cursor c = db.rawQuery("SELECT " +
+                AnimeConstantes.ID + ", " +
+                AnimeConstantes.TITULO + ", " +
+                AnimeConstantes.ESTRENO + ", " +
+                AnimeConstantes.FAVORITO + ", " +
+                AnimeConstantes.IMAGEN + ", " +
+                AnimeConstantes.URL_WEB + ", " +
+                AnimeConstantes.INFO_DESCRIPCION + " " +
+                "FROM " + AnimeConstantes.TABLA_ANIME + where, null);
+
+        return c;
+    }
+
+    /**
+     * Metodo OnClick para abrir la actividad de cada item del RecyclerView
+     */
+    public void abrePerfilAnime() {
+        adapterAnimes.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Anime anime = adapterAnimes.obtenerAnime(recyclerAnimes.getChildAdapterPosition(view));
+                Intent intencion = new Intent(getApplicationContext(), PerfilAnime.class);
+                intencion.putExtra("anime", anime);
+                startActivityForResult(intencion, COD_PERFIL);
+            }
+        });
+    }
 
     /**
      * Mostrar un ProgressDialog para la ejecucción del AsyncTask
@@ -310,14 +302,17 @@ public class MainActivity extends AppCompatActivity {
          */
         @Override
         protected Boolean doInBackground(Void... voids) {
-            for (int i = 0; i < adapterAnimes.getItemCount(); i++){
+            for (int i = 0; i < SEGUNDOS_ESPERA; i++){
                 try {
                     Thread.sleep(1000);
                 } catch(InterruptedException e) {}
-
-                if(isCancelled())
-                    break;
             }
+
+            if(isCancelled())
+                return false;
+
+            adapterAnimes = new AdapterAnimes(getApplicationContext(), selectAnimes(""));
+            abrePerfilAnime();
 
             return true;
         }
@@ -340,8 +335,9 @@ public class MainActivity extends AppCompatActivity {
          */
         @Override
         protected void onPostExecute(Boolean result) {
+            pd.dismiss();
             if(result) {
-                pd.dismiss();
+                recyclerAnimes.setAdapter(adapterAnimes);
                 Toast.makeText(MainActivity.this, "Datos cargados!", Toast.LENGTH_SHORT).show();
             }
         }

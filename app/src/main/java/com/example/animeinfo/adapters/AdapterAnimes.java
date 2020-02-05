@@ -4,8 +4,6 @@ import android.content.Context;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.net.Uri;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,9 +13,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.animeinfo.R;
 import com.example.animeinfo.model.Anime;
 import com.example.animeinfo.model.AnimeConstantes;
-
 import java.io.ByteArrayInputStream;
-import java.sql.Blob;
 
 public class AdapterAnimes
         extends RecyclerView.Adapter<AdapterAnimes.ViewHolder>

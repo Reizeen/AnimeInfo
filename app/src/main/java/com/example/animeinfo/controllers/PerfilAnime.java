@@ -18,7 +18,6 @@ import android.widget.Toast;
 
 import com.example.animeinfo.R;
 import com.example.animeinfo.model.Anime;
-import com.example.animeinfo.model.AnimeConstantes;
 
 import java.io.ByteArrayInputStream;
 
@@ -134,7 +133,6 @@ public class PerfilAnime extends AppCompatActivity {
             cargarDatosAnime();
         }
     }
-
 
     /**
      * Eliminar Anime
