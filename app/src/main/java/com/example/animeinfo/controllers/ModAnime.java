@@ -4,6 +4,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.FileProvider;
 
+import android.app.ProgressDialog;
 import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -11,6 +12,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.ParcelFileDescriptor;
@@ -38,6 +40,10 @@ public class ModAnime extends AppCompatActivity {
 
     private static final int COD_GALERIA = 10;
     private static final int COD_CAMARA = 2;
+    private final int SEGUNDOS_ESPERA = 10;
+
+    private ProgressDialog pd;
+    private MiAsyncTask miAsyncTask;
 
     private ConexionSQLiteHelper conexion;
     private String currentPhotoPath;
@@ -218,7 +224,7 @@ public class ModAnime extends AppCompatActivity {
      * Modificar anime
      * @return
      */
-    public Boolean modificarAnime(){
+    public void modificarAnime(){
         // Convertir Bitmap en Blob
         byte[] blob;
 
@@ -245,10 +251,8 @@ public class ModAnime extends AppCompatActivity {
         values.put(AnimeConstantes.URL_WEB, anime.getUrl());
         values.put(AnimeConstantes.INFO_DESCRIPCION, anime.getInfo());
 
-        //Insertamos el registro en la base de datos
-        if(db.update(AnimeConstantes.TABLA_ANIME, values, AnimeConstantes.ID + " = " + anime.getId(), null) != -1)
-            return true;
-        return false;
+        //Modificamos el registro en la base de datos
+        db.update(AnimeConstantes.TABLA_ANIME, values, AnimeConstantes.ID + " = " + anime.getId(), null);
 
     }
 
@@ -256,12 +260,115 @@ public class ModAnime extends AppCompatActivity {
      * Volver a la actividad con los datos insertados en el nuevo objeto
      */
     public void onVolver(View view) {
-        Intent intent = new Intent(getApplicationContext(), PerfilAnime.class);
-        if (modificarAnime()){
-            intent.putExtra("anime", anime);
-            setResult(RESULT_OK, intent);
-            finish();
-        } else
-            Toast.makeText(this, "Error al modificar los datos", Toast.LENGTH_SHORT);
+        iniciarAsyncTask();
+    }
+
+    /** ==================================================================
+     *  ==================== FUNCIONALIDAD AsyncTask =====================
+     *  ================================================================== /
+
+     /**
+     * Mostrar un ProgressDialog para la ejecucción del AsyncTask
+     */
+    public void iniciarAsyncTask(){
+        // Initialize a new instance of progress dialog
+        pd = new ProgressDialog(ModAnime.this);
+
+        // Set progress dialog style spinner
+        pd.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+
+        // Set the progress dialog title and message
+        pd.setMessage("Modificando...");
+        pd.setCancelable(true);
+        pd.setMax(100);
+
+        miAsyncTask = new ModAnime.MiAsyncTask();
+        miAsyncTask.execute();
+    }
+
+    /**
+     * Clase AsyncTask
+     * Utilizado para ejecutar operaciones en segundo plano,
+     * en este caso para visualizar los datos del RecyclerView
+     */
+    private class MiAsyncTask extends AsyncTask<Void, Integer, Boolean> {
+
+        /**
+         * Método llamado antes de iniciar el procesamiento en segundo plano.
+         * Establecemos un OnCenclListener por si queremos cancelar nuestro AsyncTask
+         * Mostramos el ProgressDialog
+         */
+        @Override
+        protected void onPreExecute() {
+            pd.setOnCancelListener(new DialogInterface.OnCancelListener() {
+                @Override
+                public void onCancel(DialogInterface dialog) {
+                    ModAnime.MiAsyncTask.this.cancel(true);
+                }
+            });
+
+            pd.setProgress(0);
+            pd.show();
+        }
+
+        /**
+         * En este método se define el código que se ejecutará en segundo plano.
+         * Recibe como parámetros los declarados al llamar al método execute(Params).
+         * Ejecutará un bucle con un slepp tantas veces como items tenga el adaptador.
+         * Cuanto más items más tardará en cargar.
+         * Si cancelamos, terminará el bucle.
+         * @param voids
+         * @return
+         */
+        @Override
+        protected Boolean doInBackground(Void... voids) {
+            for (int i = 0; i < SEGUNDOS_ESPERA; i++){
+                try {
+                    if(isCancelled())
+                        return false;
+                    Thread.sleep(1000);
+                    publishProgress(i * SEGUNDOS_ESPERA);
+                } catch(InterruptedException e) {}
+            }
+
+            modificarAnime();
+
+            return true;
+        }
+
+        /**
+         * Este método es llamado por publishProgress(), dentro de doInBackground(Params)
+         * El uso es  para actualizar el porcentaje de ProgressDialog.
+         * @param values
+         */
+        @Override
+        protected void onProgressUpdate(Integer... values) {
+            int progreso = values[0].intValue();
+            pd.setProgress(progreso);
+        }
+
+        /**
+         * Este método es llamado tras finalizar doInBackground(Params).
+         * Recibe como parámetro el resultado devuelto por doInBackground(Params).
+         * @param result
+         */
+        @Override
+        protected void onPostExecute(Boolean result) {
+            pd.dismiss();
+            if(result) {
+                Intent intent = new Intent(getApplicationContext(), PerfilAnime.class);
+                intent.putExtra("anime", anime);
+                setResult(RESULT_OK, intent);
+                finish();
+            }
+        }
+
+        /**
+         * Se ejecutará cuando se cancele la ejecución de la tarea antes de su finalización normal.
+         */
+        @Override
+        protected void onCancelled() {
+            Toast.makeText(ModAnime.this, "Modificación cancelada!", Toast.LENGTH_SHORT).show();
+        }
     }
 }

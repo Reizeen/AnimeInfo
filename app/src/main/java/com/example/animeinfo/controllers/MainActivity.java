@@ -304,12 +304,11 @@ public class MainActivity extends AppCompatActivity {
         protected Boolean doInBackground(Void... voids) {
             for (int i = 0; i < SEGUNDOS_ESPERA; i++){
                 try {
+                    if(isCancelled())
+                        return false;
                     Thread.sleep(1000);
                 } catch(InterruptedException e) {}
             }
-
-            if(isCancelled())
-                return false;
 
             adapterAnimes = new AdapterAnimes(getApplicationContext(), selectAnimes(""));
             abrePerfilAnime();

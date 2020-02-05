@@ -36,7 +36,7 @@
                 android:layout_marginRight="30dp"
                 android:background="@color/colorPrimary"
                 android:textColor="#FFFFFF"
-                android:text="Sunir Imagen"
+                android:text="Subir Imagen"
                 android:onClick="subirImagen"/>
 
             <ImageView
