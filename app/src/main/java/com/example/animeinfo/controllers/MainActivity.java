@@ -259,7 +259,7 @@ public class MainActivity extends AppCompatActivity {
 
         // Set the progress dialog title and message
         pd.setMessage("Cargando...");
-        pd.setCancelable(true);
+        pd.setCancelable(false);
         pd.setMax(100);
 
         miAsyncTask = new MiAsyncTask();
@@ -304,8 +304,6 @@ public class MainActivity extends AppCompatActivity {
         protected Boolean doInBackground(Void... voids) {
             for (int i = 0; i < SEGUNDOS_ESPERA; i++){
                 try {
-                    if(isCancelled())
-                        return false;
                     Thread.sleep(1000);
                 } catch(InterruptedException e) {}
             }
@@ -341,13 +339,6 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
-        /**
-         * Se ejecutará cuando se cancele la ejecución de la tarea antes de su finalización normal.
-         */
-        @Override
-        protected void onCancelled() {
-            Toast.makeText(MainActivity.this, "Carga cancelada!", Toast.LENGTH_SHORT).show();
-        }
     }
 
 }
