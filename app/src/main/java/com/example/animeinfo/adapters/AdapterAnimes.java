@@ -114,7 +114,7 @@ public class AdapterAnimes
 
         // Asignación
         holder.nombreText.setText(items.getString(AnimeConstantes.COLUMN_TITULO));
-        holder.infoText.setText(items.getString(AnimeConstantes.COLUMN_TITULO));
+        holder.infoText.setText(items.getString(AnimeConstantes.COLUMN_DESCRIPCION));
 
         byte[] blob = items.getBlob(AnimeConstantes.COLUMN_IMAGEN);
         ByteArrayInputStream bais = new ByteArrayInputStream(blob);
