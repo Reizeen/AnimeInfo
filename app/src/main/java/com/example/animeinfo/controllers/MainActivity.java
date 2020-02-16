@@ -12,6 +12,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.database.MatrixCursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -28,6 +29,16 @@ import com.example.animeinfo.adapters.AdapterAnimes;
 import com.example.animeinfo.model.Anime;
 import com.example.animeinfo.model.AnimeConstantes;
 import com.example.animeinfo.model.ConexionSQLiteHelper;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.URL;
+import java.net.URLConnection;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -89,7 +100,7 @@ public class MainActivity extends AppCompatActivity {
         MenuItem item = menu.findItem(R.id.action_buscar);
 
         // Asignar un SearchView al boton del action
-        SearchView search = (SearchView) item.getActionView();
+        /*SearchView search = (SearchView) item.getActionView();
         search.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
@@ -101,8 +112,8 @@ public class MainActivity extends AppCompatActivity {
                 //Separar la palabra del buscador
                 newText = newText.toLowerCase();
 
-                /* Si no se está  buscando nada se actualiza la lista actual
-                 * sino se actualiza la lista filtrada. */
+                // * Si no se está  buscando nada se actualiza la lista actual
+                // * sino se actualiza la lista filtrada.
                 if (newText.isEmpty()){
                     adapterAnimes.swapCursor(selectAnimes(""));
                 } else {
@@ -111,7 +122,7 @@ public class MainActivity extends AppCompatActivity {
                 }
                 return true;
             }
-        });
+        });*/
         return true;
     }
 
@@ -158,6 +169,21 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
+     * Metodo OnClick para abrir la actividad de cada item del RecyclerView
+     */
+    public void abrePerfilAnime() {
+        adapterAnimes.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Anime anime = adapterAnimes.obtenerAnime(recyclerAnimes.getChildAdapterPosition(view));
+                Intent intencion = new Intent(getApplicationContext(), PerfilAnime.class);
+                intencion.putExtra("anime", anime);
+                startActivityForResult(intencion, COD_PERFIL);
+            }
+        });
+    }
+
+    /**
      * Guardar la informacion de las otras actividades
      */
     public void onActivityResult(int requestCode, int resultCode, Intent code) {
@@ -174,7 +200,7 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(getApplicationContext(), "Anime insertado correctamente", Toast.LENGTH_SHORT).show();
         }
 
-        adapterAnimes.swapCursor(selectAnimes(""));
+        adapterAnimes.swapCursor(selectAnimes());
     }
 
     /**
@@ -211,14 +237,31 @@ public class MainActivity extends AppCompatActivity {
 
     /** ==================================================================
      *  ==================== FUNCIONALIDAD AsyncTask =====================
-     *  ================================================================== /
+     *  ================================================================== */
 
-     /**
+    /**
      * Consultar todos los animes de la BD o
      * consultarlos según el where para el buscador
      */
-    public Cursor selectAnimes(String where) {
-        SQLiteDatabase db = conexion.getReadableDatabase();
+     public String readJSON() {
+         String json = "";
+         try {
+             URL web = new URL("http://reizen.pythonanywhere.com/animes");
+             URLConnection yc = web.openConnection();
+             BufferedReader in = new BufferedReader(new InputStreamReader(yc.getInputStream()));
+             String inputLine;
+             while ((inputLine = in.readLine()) != null)
+                 json += inputLine;
+             in.close();
+         } catch(IOException e){
+             e.printStackTrace();
+         }
+         return json;
+     }
+
+
+    public Cursor selectAnimes() {
+        /*SQLiteDatabase db = conexion.getReadableDatabase();
         Cursor c = db.rawQuery("SELECT " +
                 AnimeConstantes.ID + ", " +
                 AnimeConstantes.TITULO + ", " +
@@ -227,24 +270,34 @@ public class MainActivity extends AppCompatActivity {
                 AnimeConstantes.IMAGEN + ", " +
                 AnimeConstantes.URL_WEB + ", " +
                 AnimeConstantes.INFO_DESCRIPCION + " " +
-                "FROM " + AnimeConstantes.TABLA_ANIME + where, null);
+                "FROM " + AnimeConstantes.TABLA_ANIME + where, null);*/
 
-        return c;
-    }
+        MatrixCursor cursor = new MatrixCursor(
+                new String[] {"c_id", "c_titulo", "c_estreno", "c_favorito", "c_imagen", "c_url", "c_info"});
+        try {
+            JSONArray respJSON = new JSONArray(readJSON());
+            for(int i=0; i<respJSON.length(); i++) {
+                JSONObject obj = respJSON.getJSONObject(i);
 
-    /**
-     * Metodo OnClick para abrir la actividad de cada item del RecyclerView
-     */
-    public void abrePerfilAnime() {
-        adapterAnimes.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Anime anime = adapterAnimes.obtenerAnime(recyclerAnimes.getChildAdapterPosition(view));
-                Intent intencion = new Intent(getApplicationContext(), PerfilAnime.class);
-                intencion.putExtra("anime", anime);
-                startActivityForResult(intencion, COD_PERFIL);
+                /**convertir string a blob para meterlo en el cursor
+                 * y no tener que cambiar el adaptador */
+                String imagen = obj.getString("imagen");
+                byte[] byteImage = imagen.getBytes();
+
+                cursor.newRow()
+                        .add("c_id", obj.getInt("id"))
+                        .add("c_titulo", obj.getString("titulo"))
+                        .add("c_estreno", obj.getString("estreno"))
+                        .add("c_favorito", obj.getInt("favorito"))
+                        .add("c_imagen", byteImage)
+                        .add("c_url", obj.getString("url"))
+                        .add("c_info", obj.getString("info"));
             }
-        });
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return cursor;
     }
 
     /**
@@ -308,7 +361,7 @@ public class MainActivity extends AppCompatActivity {
                 } catch(InterruptedException e) {}
             }
 
-            adapterAnimes = new AdapterAnimes(getApplicationContext(), selectAnimes(""));
+            adapterAnimes = new AdapterAnimes(getApplicationContext(), selectAnimes());
             abrePerfilAnime();
 
             return true;
