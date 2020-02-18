@@ -25,12 +25,25 @@ import android.widget.Toast;
 import com.example.animeinfo.R;
 import com.example.animeinfo.model.AnimeConstantes;
 import com.example.animeinfo.model.ConexionSQLiteHelper;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.BufferedOutputStream;
+import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileDescriptor;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Iterator;
 
 public class AddAnime extends AppCompatActivity {
 
@@ -196,10 +209,9 @@ public class AddAnime extends AppCompatActivity {
 
     /**
      * Convertir el bitmap de la imagen a BLOB
-     * Insertar el nuevo anime en la BD
      * @return
      */
-    public void insertarAnime(){
+    public byte[] convertBitmap(){
         byte[] blob;
         ByteArrayOutputStream baos = new ByteArrayOutputStream(175000);
 
@@ -215,20 +227,80 @@ public class AddAnime extends AppCompatActivity {
         }
 
         blob = baos.toByteArray();
-        ConexionSQLiteHelper conn = new ConexionSQLiteHelper(this, AnimeConstantes.NOMBRE_DB, null, 1);
 
-        // Poder escribir en la base de datod
-        SQLiteDatabase db = conn.getWritableDatabase();
-        ContentValues values = new ContentValues();
-        values.put(AnimeConstantes.TITULO, titulo.getText().toString());
-        values.put(AnimeConstantes.ESTRENO, estreno.getText().toString());
-        values.put(AnimeConstantes.FAVORITO, 0);
-        values.put(AnimeConstantes.IMAGEN, blob);
-        values.put(AnimeConstantes.URL_WEB, url.getText().toString());
-        values.put(AnimeConstantes.INFO_DESCRIPCION, info.getText().toString());
+        return blob;
 
-        //Insertamos el registro en la base de datos
-        db.insert(AnimeConstantes.TABLA_ANIME, null, values);
+
+
+    }
+
+    /**
+     * Convertir el JSON en String
+     * @param params
+     * @return
+     * @throws JSONException
+     * @throws UnsupportedEncodingException
+     */
+    public String getPostDataString(JSONObject params) throws JSONException, UnsupportedEncodingException {
+        StringBuilder result = new StringBuilder();
+        boolean first = true;
+        Iterator<String> itr = params.keys();
+
+        while (itr.hasNext()){
+            String key = itr.next();
+            Object value = params.get(key);
+
+            if(first)
+                first = false;
+            else
+                result.append("&");
+
+            result.append(URLEncoder.encode(key, "UTF-8"));
+            result.append("=");
+            result.append(URLEncoder.encode(value.toString(), "UTF-8"));
+        }
+        return result.toString();
+    }
+
+    /**
+     * Iniciar Conecion con el servidor e insertar un nuevo dato.
+     */
+    public void insertarAnime(){
+        try{
+            URL urlWeb = new URL("http://reizen.pythonanywhere.com/anime");
+            HttpURLConnection urlConn = (HttpURLConnection) urlWeb.openConnection();
+            urlConn.connect();
+            int code = urlConn.getResponseCode();
+
+            if (code == HttpURLConnection.HTTP_OK){
+                JSONObject postData = new JSONObject();
+                postData.put("titulo", titulo.getText().toString());
+                postData.put("estreno", estreno.getText().toString());
+                postData.put("favorito", 0);
+                postData.put("imagen", convertBitmap());
+                postData.put("url",  url.getText().toString());
+                postData.put("info", info.getText().toString());
+
+                urlConn.setRequestProperty("Content-Type", "x-www-form-urlencoded");
+                urlConn.setRequestMethod("POST");
+                // permite el envío de datos hacia el servidor
+                urlConn.setDoOutput(true);
+                urlConn.setChunkedStreamingMode(0);
+
+                OutputStream out = new BufferedOutputStream(urlConn.getOutputStream());
+                BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(out, "UTF-8"));
+                writer.write(getPostDataString(postData));
+                writer.flush();
+                writer.close();
+                out.close();
+            }
+
+
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
     }
 
     /**
@@ -299,15 +371,6 @@ public class AddAnime extends AppCompatActivity {
          */
         @Override
         protected Boolean doInBackground(Void... voids) {
-            for (int i = 0; i < SEGUNDOS_ESPERA; i++){
-                try {
-                    if(isCancelled())
-                        return false;
-                    Thread.sleep(1000);
-                    publishProgress(i * SEGUNDOS_ESPERA);
-                } catch(InterruptedException e) {}
-            }
-
             if(isCancelled())
                 return false;
 

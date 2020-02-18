@@ -18,6 +18,7 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -34,9 +35,13 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
 
@@ -44,7 +49,6 @@ public class MainActivity extends AppCompatActivity {
 
     private final int COD_PERFIL = 10;
     private final int CODE_PERMISOS = 20;
-    private final int SEGUNDOS_ESPERA = 10;
 
     private AdapterAnimes adapterAnimes;
     private RecyclerView recyclerAnimes;
@@ -188,19 +192,19 @@ public class MainActivity extends AppCompatActivity {
      */
     public void onActivityResult(int requestCode, int resultCode, Intent code) {
         if (requestCode == COD_PERFIL && resultCode == RESULT_OK) {
-            Anime animeMod = (Anime) code.getSerializableExtra("anime");
+           /* Anime animeMod = (Anime) code.getSerializableExtra("anime");
             int operacionCode = code.getIntExtra("operacionCode", -1);
 
             if (operacionCode == 0)
                 modificarFavorito(animeMod);
             else if (operacionCode == -1)
-                eliminarAnime(animeMod);
+                eliminarAnime(animeMod);*/
 
         } else if (requestCode == 102 && resultCode == RESULT_OK) {
             Toast.makeText(getApplicationContext(), "Anime insertado correctamente", Toast.LENGTH_SHORT).show();
         }
 
-        adapterAnimes.swapCursor(selectAnimes());
+        iniciarAsyncTask();
     }
 
     /**
@@ -214,6 +218,7 @@ public class MainActivity extends AppCompatActivity {
 
     /**
      * Modificar favorito de un anime en la BD despues de volver del perfil
+     * MAL IMPLEMENTADO, HAY QUE ARREGLAR
      */
     public void modificarFavorito(Anime animeMod) {
         int numFav;
@@ -226,12 +231,37 @@ public class MainActivity extends AppCompatActivity {
             mensaje = "Anime eliminado de favoritos";
         }
 
-        //Actualizamos favorito en la base de datos
-        SQLiteDatabase db = conexion.getReadableDatabase();
-        ContentValues valores = new ContentValues();
-        valores.put(AnimeConstantes.FAVORITO, numFav);
-        db.update(AnimeConstantes.TABLA_ANIME, valores, AnimeConstantes.ID + " = " + animeMod.getId(), null);
-        Toast.makeText(getApplicationContext(), mensaje, Toast.LENGTH_SHORT).show();
+        // Actualizamos favorito en la base de datos
+        try {
+            URL web = new URL("http://reizen.pythonanywhere.com/anime/" + animeMod.getId());
+            HttpURLConnection urlConn = (HttpURLConnection) web.openConnection();
+            urlConn.setRequestMethod("PUT");
+            urlConn.setRequestProperty("Content-Type", "application/json; utf-8");
+            urlConn.setDoOutput(true);
+
+            // Construimos el objeto cliente en formato JSON
+            JSONObject dato = new JSONObject();
+            dato.put("id", animeMod.getId());
+            dato.put("titulo", animeMod.getTitulo());
+            dato.put("estreno", animeMod.getEstreno());
+            dato.put("favorito", numFav);
+            dato.put("imagen", animeMod.getFoto());
+            dato.put("url", animeMod.getUrl());
+            dato.put("info", animeMod.getUrl());
+
+            OutputStreamWriter osw = new OutputStreamWriter(urlConn.getOutputStream(),"UTF-8");
+            osw.write(dato.toString());
+            // Obliga a escribir los datos para que no solo se queden en memoria.
+            osw.flush();
+            osw.close();
+
+            Toast.makeText(getApplicationContext(), mensaje, Toast.LENGTH_SHORT).show();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 
 
@@ -242,41 +272,39 @@ public class MainActivity extends AppCompatActivity {
     /**
      * Consultar todos los animes de la BD o
      * consultarlos según el where para el buscador
+     *
+     * HttpClientya no se admite en sdk 23. Debe usar URLConnection
      */
      public String readJSON() {
-         String json = "";
+         StringBuilder json = new StringBuilder();
          try {
              URL web = new URL("http://reizen.pythonanywhere.com/animes");
-             URLConnection yc = web.openConnection();
-             BufferedReader in = new BufferedReader(new InputStreamReader(yc.getInputStream()));
+             HttpURLConnection urlConn = (HttpURLConnection) web.openConnection();
+             InputStream in = new BufferedInputStream(urlConn.getInputStream());
+             BufferedReader reader = new BufferedReader(new InputStreamReader(in));
+
              String inputLine;
-             while ((inputLine = in.readLine()) != null)
-                 json += inputLine;
+             while ((inputLine = reader.readLine()) != null)
+                 json.append(inputLine);
+
              in.close();
+             urlConn.disconnect();
          } catch(IOException e){
              e.printStackTrace();
          }
-         return json;
+
+         Log.e(null, json.toString());
+         return json.toString();
      }
 
 
     public Cursor selectAnimes() {
-        /*SQLiteDatabase db = conexion.getReadableDatabase();
-        Cursor c = db.rawQuery("SELECT " +
-                AnimeConstantes.ID + ", " +
-                AnimeConstantes.TITULO + ", " +
-                AnimeConstantes.ESTRENO + ", " +
-                AnimeConstantes.FAVORITO + ", " +
-                AnimeConstantes.IMAGEN + ", " +
-                AnimeConstantes.URL_WEB + ", " +
-                AnimeConstantes.INFO_DESCRIPCION + " " +
-                "FROM " + AnimeConstantes.TABLA_ANIME + where, null);*/
 
         MatrixCursor cursor = new MatrixCursor(
                 new String[] {"c_id", "c_titulo", "c_estreno", "c_favorito", "c_imagen", "c_url", "c_info"});
         try {
             JSONArray respJSON = new JSONArray(readJSON());
-            for(int i=0; i<respJSON.length(); i++) {
+            for(int i=0; i < respJSON.length(); i++) {
                 JSONObject obj = respJSON.getJSONObject(i);
 
                 /**convertir string a blob para meterlo en el cursor
@@ -355,12 +383,6 @@ public class MainActivity extends AppCompatActivity {
          */
         @Override
         protected Boolean doInBackground(Void... voids) {
-            for (int i = 0; i < SEGUNDOS_ESPERA; i++){
-                try {
-                    Thread.sleep(1000);
-                } catch(InterruptedException e) {}
-            }
-
             adapterAnimes = new AdapterAnimes(getApplicationContext(), selectAnimes());
             abrePerfilAnime();
 
