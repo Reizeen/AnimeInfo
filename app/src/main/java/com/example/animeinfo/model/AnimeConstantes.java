@@ -13,6 +13,8 @@ public class AnimeConstantes {
     public static final String URL_WEB = "url";
     public static final String INFO_DESCRIPCION = "descripcion";
 
+    public static final String IP = "10.10.0.134:3000";
+
     /**
      * Numero de la posicion de cada columna en la BD
      */
@@ -20,9 +22,9 @@ public class AnimeConstantes {
     public static final int COLUMN_TITULO = 1;
     public static final int COLUMN_ESTRENO = 2;
     public static final int COLUMN_FAVORITO = 3;
-    public static final int COLUMN_IMAGEN = 4;
-    public static final int COLUMN_URL = 5;
-    public static final int COLUMN_DESCRIPCION = 6;
+    //public static final int COLUMN_IMAGEN = 4;
+    public static final int COLUMN_URL = 4;
+    public static final int COLUMN_DESCRIPCION = 5;
 
     //Sentencia SQL para crear la tabla
     public static final String CREAR_TABLA_ANIME = "" +

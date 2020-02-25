@@ -14,6 +14,15 @@ public class Anime implements Serializable {
     private String url;
     private String info;
 
+    public Anime(int id, String titulo, boolean favorito, String estreno, String url, String info) {
+        this.id = id;
+        this.titulo = titulo;
+        this.favorito = favorito;
+        this.estreno = estreno;
+        this.url = url;
+        this.info = info;
+    }
+
     public Anime(int id, String titulo, boolean favorito, String estreno, byte[] imagen, String url, String info) {
         this.id = id;
         this.titulo = titulo;

@@ -24,6 +24,8 @@ import java.io.ByteArrayInputStream;
 public class PerfilAnime extends AppCompatActivity {
 
     private final int COD_MODIFICAR = 101;
+    private final int COD_FAVORITO = 102;
+    private final int COD_ELIMINAR = 103;
 
     private Anime anime;
     private TextView titulo;
@@ -54,10 +56,11 @@ public class PerfilAnime extends AppCompatActivity {
         estreno.setText("Año de estreno: " + anime.getEstreno());
         info.setText(anime.getInfo());
 
-        ByteArrayInputStream bais = new ByteArrayInputStream(anime.getFoto());
+        /*ByteArrayInputStream bais = new ByteArrayInputStream(anime.getFoto());
         Bitmap foto = BitmapFactory.decodeStream(bais);
-        imagen.setImageBitmap(foto);
+        imagen.setImageBitmap(foto);*/
 
+        imagen.setImageResource(R.drawable.imagen_no_disponible);
         fav = anime.getFavorito();
     }
 
@@ -129,8 +132,12 @@ public class PerfilAnime extends AppCompatActivity {
         if (requestCode == COD_MODIFICAR && resultCode == RESULT_OK) {
             Anime animeMod = (Anime) code.getSerializableExtra("anime");
             anime = animeMod;
-            Log.i(null, "onActivityResult: " + animeMod.getTitulo());
             cargarDatosAnime();
+
+            Intent intencion = new Intent(PerfilAnime.this, MainActivity.class);
+            intencion.putExtra("anime", anime);
+            intencion.putExtra("operacionCode", COD_MODIFICAR);
+            setResult(RESULT_OK, intencion);
         }
     }
 
@@ -149,7 +156,7 @@ public class PerfilAnime extends AppCompatActivity {
                     public void onClick(DialogInterface dialog, int which) {
                         Intent intencion = new Intent(PerfilAnime.this, MainActivity.class);
                         intencion.putExtra("anime", anime);
-                        intencion.putExtra("operacionCode", -1);
+                        intencion.putExtra("operacionCode", COD_ELIMINAR);
                         setResult(RESULT_OK, intencion);
                         finish();
                     }
@@ -191,7 +198,7 @@ public class PerfilAnime extends AppCompatActivity {
         anime.setFavorito(fav); // Guardar favorito si precede
         Intent intencion = new Intent(PerfilAnime.this, MainActivity.class);
         intencion.putExtra("anime", anime);
-        intencion.putExtra("operacionCode", 0);
+        intencion.putExtra("operacionCode", COD_FAVORITO);
         setResult(RESULT_OK, intencion);
     }
 

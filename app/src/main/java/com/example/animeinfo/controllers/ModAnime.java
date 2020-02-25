@@ -28,11 +28,15 @@ import com.example.animeinfo.model.Anime;
 import com.example.animeinfo.model.AnimeConstantes;
 import com.example.animeinfo.model.ConexionSQLiteHelper;
 
+import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileDescriptor;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -40,7 +44,7 @@ public class ModAnime extends AppCompatActivity {
 
     private static final int COD_GALERIA = 10;
     private static final int COD_CAMARA = 2;
-    private final int SEGUNDOS_ESPERA = 10;
+    private final int SEGUNDOS_ESPERA = 3;
 
     private ProgressDialog pd;
     private MiAsyncTask miAsyncTask;
@@ -81,9 +85,11 @@ public class ModAnime extends AppCompatActivity {
         titulo.setText(anime.getTitulo());
         estreno.setText(anime.getEstreno());
 
-        ByteArrayInputStream bais = new ByteArrayInputStream(anime.getFoto());
+        /*ByteArrayInputStream bais = new ByteArrayInputStream(anime.getFoto());
         Bitmap foto = BitmapFactory.decodeStream(bais);
-        imagen.setImageBitmap(foto);
+        imagen.setImageBitmap(foto);*/
+
+        imagen.setImageResource(R.drawable.imagen_no_disponible);
 
         url.setText(anime.getUrl());
         info.setText(anime.getInfo());
@@ -221,47 +227,17 @@ public class ModAnime extends AppCompatActivity {
     }
 
     /**
-     * Modificar anime
-     * @return
-     */
-    public void modificarAnime(){
-        // Convertir Bitmap en Blob
-        byte[] blob;
-
-        if (bitmapEscalado == null){
-            blob = anime.getFoto();
-        } else {
-            ByteArrayOutputStream baos = new ByteArrayOutputStream(175000);
-            bitmapEscalado.compress(Bitmap.CompressFormat.PNG, 0 , baos);
-            blob = baos.toByteArray();
-        }
-
-        anime.setTitulo(titulo.getText().toString());
-        anime.setEstreno(estreno.getText().toString());
-        anime.setFoto(blob);
-        anime.setUrl(url.getText().toString());
-        anime.setInfo(info.getText().toString());
-
-        // Poder escribir en la base de datod
-        SQLiteDatabase db = conexion.getWritableDatabase();
-        ContentValues values = new ContentValues();
-        values.put(AnimeConstantes.TITULO, anime.getTitulo());
-        values.put(AnimeConstantes.ESTRENO, anime.getEstreno());
-        values.put(AnimeConstantes.IMAGEN, blob);
-        values.put(AnimeConstantes.URL_WEB, anime.getUrl());
-        values.put(AnimeConstantes.INFO_DESCRIPCION, anime.getInfo());
-
-        //Modificamos el registro en la base de datos
-        db.update(AnimeConstantes.TABLA_ANIME, values, AnimeConstantes.ID + " = " + anime.getId(), null);
-
-    }
-
-    /**
-     * Volver a la actividad con los datos insertados en el nuevo objeto
+     * Volver a la actividad anterior y modificar los neuvos datos.
      */
     public void onVolver(View view) {
+        anime.setTitulo(titulo.getText().toString());
+        anime.setEstreno(estreno.getText().toString());
+        anime.setUrl(url.getText().toString());
+        anime.setInfo(info.getText().toString());
         iniciarAsyncTask();
     }
+
+
 
     /** ==================================================================
      *  ==================== FUNCIONALIDAD AsyncTask =====================
@@ -285,6 +261,45 @@ public class ModAnime extends AppCompatActivity {
         miAsyncTask = new ModAnime.MiAsyncTask();
         miAsyncTask.execute();
     }
+
+
+    /**
+     * Modificar anime
+     * @return
+     */
+    public void modificarAnime(){
+        try{
+            URL urlWeb = new URL("http://" + AnimeConstantes.IP + "/anime/" + anime.getId());
+            HttpURLConnection httpConn = (HttpURLConnection) urlWeb.openConnection();
+
+            String c_nombre = "titulo=" + anime.getTitulo();
+            String c_estreno =  "&estreno=" + anime.getEstreno();
+            String c_favorito = "&favorito=0";
+            String c_url = "&url=" + anime.getUrl();
+            String c_info = "&info=" + anime.getInfo();
+
+            String httpParametros = c_nombre + c_estreno + c_favorito + c_url + c_info;
+
+            // Activar método POST
+            httpConn.setDoOutput(true);
+            httpConn.setRequestMethod("PUT");
+
+            // Establecer application/x-www-form-urlencoded debido a la simplicidad de los datos
+            httpConn.setRequestProperty("Content-Type","application/x-www-form-urlencoded");
+
+            OutputStream out = new BufferedOutputStream(httpConn.getOutputStream());
+            out.write(httpParametros.getBytes());
+            out.flush();
+            out.close();
+
+            String responseCode = httpConn.getResponseMessage();
+            Log.i(null, "modificarAnime: " + responseCode);
+            httpConn.disconnect();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
 
     /**
      * Clase AsyncTask
@@ -324,12 +339,13 @@ public class ModAnime extends AppCompatActivity {
         protected Boolean doInBackground(Void... voids) {
             for (int i = 0; i < SEGUNDOS_ESPERA; i++){
                 try {
-                    if(isCancelled())
-                        return false;
                     Thread.sleep(1000);
-                    publishProgress(i * SEGUNDOS_ESPERA);
+                    publishProgress((100 / (SEGUNDOS_ESPERA - 1)) * i);
                 } catch(InterruptedException e) {}
             }
+
+            if(isCancelled())
+                return false;
 
             modificarAnime();
 

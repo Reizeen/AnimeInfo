@@ -34,7 +34,9 @@ import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileDescriptor;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
@@ -49,10 +51,10 @@ public class AddAnime extends AppCompatActivity {
 
     private static final int COD_GALERIA = 10;
     private static final int COD_CAMARA = 2;
-    private final int SEGUNDOS_ESPERA = 10;
 
     private ProgressDialog pd;
     private MiAsyncTask miAsyncTask;
+    private final int SEGUNDOS_ESPERA = 3;
 
     private String currentPhotoPath;
     private Bitmap bitmapEscalado;
@@ -75,6 +77,7 @@ public class AddAnime extends AppCompatActivity {
         url = findViewById(R.id.idFuenteAdd);
         info = findViewById(R.id.idInfoAdd);
     }
+
 
     /**
      * Evento onClick para subir una imagen desde la galeria o la camara
@@ -120,6 +123,7 @@ public class AddAnime extends AppCompatActivity {
         alertOpciones.show();
     }
 
+
     /**
      * Metodo para tomar la foto
      * Crear archivo para almacenar la imagen
@@ -145,44 +149,6 @@ public class AddAnime extends AppCompatActivity {
         return image;
     }
 
-    /**
-     * Crear bitmap de la imagen de la galeria
-     * mediante su URI
-     * @param uri
-     * @throws IOException
-     */
-    public Bitmap getBitmapFromUri(Uri uri) throws IOException {
-        ParcelFileDescriptor parcelFileDescriptor = getContentResolver().openFileDescriptor(uri, "r");
-        FileDescriptor fileDescriptor = parcelFileDescriptor.getFileDescriptor();
-        Bitmap imageGallery = BitmapFactory.decodeFileDescriptor(fileDescriptor);
-        parcelFileDescriptor.close();
-        return imageGallery;
-    }
-
-    /**
-     * Darle tamaño a la imagen
-     * @param bitmap
-     * @return
-     */
-    public Bitmap escalarImagen(Bitmap bitmap){
-        double alto = 0;
-        double ancho = 0;
-        double factor = 0;
-
-        Log.i(null, "escalarImagen: ----------------------" + bitmap.getWidth() + " x " + bitmap.getHeight());
-        if(bitmap.getHeight() > bitmap.getWidth()){
-            factor = (double)bitmap.getHeight() / (double)bitmap.getWidth();
-            alto = 400;
-            ancho = alto / factor;
-        } else {
-            factor = (double)bitmap.getWidth() / (double)bitmap.getHeight();
-            Log.i(null, "escalarImagen: ----------------------" + factor);
-            ancho = 400;
-            alto = ancho / factor;
-        }
-        Log.i(null, "escalarImagen: ----------------------" + ancho + " x " + alto);
-        return Bitmap.createScaledBitmap(bitmap, (int)ancho, (int)alto, true);
-    }
 
     /**
      * Cargar la imagen de la galeria en la actividad
@@ -207,6 +173,46 @@ public class AddAnime extends AppCompatActivity {
         }
     }
 
+
+    /**
+     * Crear bitmap de la imagen de la galeria
+     * mediante su URI
+     * @param uri
+     * @throws IOException
+     */
+    public Bitmap getBitmapFromUri(Uri uri) throws IOException {
+        ParcelFileDescriptor parcelFileDescriptor = getContentResolver().openFileDescriptor(uri, "r");
+        FileDescriptor fileDescriptor = parcelFileDescriptor.getFileDescriptor();
+        Bitmap imageGallery = BitmapFactory.decodeFileDescriptor(fileDescriptor);
+        parcelFileDescriptor.close();
+        return imageGallery;
+    }
+
+
+    /**
+     * Darle tamaño a la imagen
+     * @param bitmap
+     * @return
+     */
+    public Bitmap escalarImagen(Bitmap bitmap){
+        double alto = 0;
+        double ancho = 0;
+        double factor = 0;
+
+        if(bitmap.getHeight() > bitmap.getWidth()){
+            factor = (double)bitmap.getHeight() / (double)bitmap.getWidth();
+            alto = 400;
+            ancho = alto / factor;
+
+        } else {
+            factor = (double)bitmap.getWidth() / (double)bitmap.getHeight();
+            ancho = 400;
+            alto = ancho / factor;
+        }
+        return Bitmap.createScaledBitmap(bitmap, (int)ancho, (int)alto, true);
+    }
+
+
     /**
      * Convertir el bitmap de la imagen a BLOB
      * @return
@@ -229,78 +235,49 @@ public class AddAnime extends AppCompatActivity {
         blob = baos.toByteArray();
 
         return blob;
-
-
-
     }
 
-    /**
-     * Convertir el JSON en String
-     * @param params
-     * @return
-     * @throws JSONException
-     * @throws UnsupportedEncodingException
-     */
-    public String getPostDataString(JSONObject params) throws JSONException, UnsupportedEncodingException {
-        StringBuilder result = new StringBuilder();
-        boolean first = true;
-        Iterator<String> itr = params.keys();
 
-        while (itr.hasNext()){
-            String key = itr.next();
-            Object value = params.get(key);
 
-            if(first)
-                first = false;
-            else
-                result.append("&");
-
-            result.append(URLEncoder.encode(key, "UTF-8"));
-            result.append("=");
-            result.append(URLEncoder.encode(value.toString(), "UTF-8"));
-        }
-        return result.toString();
-    }
+    /** ==================================================================
+     *  ============= Proceso de inserccion en la API REST ===============
+     *  ================================================================== /
 
     /**
-     * Iniciar Conecion con el servidor e insertar un nuevo dato.
+     * Iniciar Conexion con el servidor e insertar un nuevo dato.
      */
     public void insertarAnime(){
         try{
-            URL urlWeb = new URL("http://reizen.pythonanywhere.com/anime");
-            HttpURLConnection urlConn = (HttpURLConnection) urlWeb.openConnection();
-            urlConn.connect();
-            int code = urlConn.getResponseCode();
+            URL urlWeb = new URL("http://" + AnimeConstantes.IP + "/anime");
+            HttpURLConnection httpConn = (HttpURLConnection) urlWeb.openConnection();
 
-            if (code == HttpURLConnection.HTTP_OK){
-                JSONObject postData = new JSONObject();
-                postData.put("titulo", titulo.getText().toString());
-                postData.put("estreno", estreno.getText().toString());
-                postData.put("favorito", 0);
-                postData.put("imagen", convertBitmap());
-                postData.put("url",  url.getText().toString());
-                postData.put("info", info.getText().toString());
+            String c_nombre = "titulo=" + titulo.getText().toString();
+            String c_estreno =  "&estreno=" + estreno.getText().toString();
+            String c_favorito = "&favorito=0";
+            String c_url = "&url=" + url.getText().toString();
+            String c_info = "&info=" + info.getText().toString();
 
-                urlConn.setRequestProperty("Content-Type", "x-www-form-urlencoded");
-                urlConn.setRequestMethod("POST");
-                // permite el envío de datos hacia el servidor
-                urlConn.setDoOutput(true);
-                urlConn.setChunkedStreamingMode(0);
+            String httpParametros = c_nombre + c_estreno + c_favorito + c_url + c_info;
 
-                OutputStream out = new BufferedOutputStream(urlConn.getOutputStream());
-                BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(out, "UTF-8"));
-                writer.write(getPostDataString(postData));
-                writer.flush();
-                writer.close();
-                out.close();
-            }
+            // Activar método POST
+            httpConn.setDoOutput(true);
+            httpConn.setRequestMethod("POST");
 
+            // Establecer application/x-www-form-urlencoded debido a la simplicidad de los datos
+            httpConn.setRequestProperty("Content-Type","application/x-www-form-urlencoded");
 
+            OutputStream out = new BufferedOutputStream(httpConn.getOutputStream());
+            out.write(httpParametros.getBytes());
+            out.flush();
+            out.close();
+
+            String responseCode = httpConn.getResponseMessage();
+            System.out.println("HTTP de repuesta: " + responseCode);
+            httpConn.disconnect();
 
         } catch (Exception e) {
             e.printStackTrace();
         }
-
     }
 
     /**
@@ -371,6 +348,13 @@ public class AddAnime extends AppCompatActivity {
          */
         @Override
         protected Boolean doInBackground(Void... voids) {
+            for (int i = 0; i < SEGUNDOS_ESPERA; i++){
+                try {
+                    Thread.sleep(1000);
+                    publishProgress((100 / (SEGUNDOS_ESPERA - 1)) * i);
+                } catch(InterruptedException e) {}
+            }
+
             if(isCancelled())
                 return false;
 

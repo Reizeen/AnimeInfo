@@ -71,11 +71,11 @@ public class AdapterAnimes
                 else
                     fav = false;
 
-                byte[] blob = items.getBlob(AnimeConstantes.COLUMN_IMAGEN);
+                //byte[] blob = items.getBlob(AnimeConstantes.COLUMN_IMAGEN);
                 String url = items.getString(AnimeConstantes.COLUMN_URL);
                 String info = items.getString(AnimeConstantes.COLUMN_DESCRIPCION);
 
-                Anime anime = new Anime(id, titulo, fav, estreno, blob, url, info);
+                Anime anime = new Anime(id, titulo, fav, estreno, url, info);
                 return anime;
 
             } else {
@@ -116,10 +116,11 @@ public class AdapterAnimes
         holder.nombreText.setText(items.getString(AnimeConstantes.COLUMN_TITULO));
         holder.infoText.setText(items.getString(AnimeConstantes.COLUMN_DESCRIPCION));
 
-        byte[] blob = items.getBlob(AnimeConstantes.COLUMN_IMAGEN);
+        /*byte[] blob = items.getBlob(AnimeConstantes.COLUMN_IMAGEN);
         ByteArrayInputStream bais = new ByteArrayInputStream(blob);
         Bitmap foto = BitmapFactory.decodeStream(bais);
-        holder.fotoImage.setImageBitmap(foto);
+        holder.fotoImage.setImageBitmap(foto);*/
+        holder.fotoImage.setImageResource(R.drawable.imagen_no_disponible);
     }
 
 
