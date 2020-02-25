@@ -25,6 +25,14 @@ import android.view.View;
 import android.widget.SearchView;
 import android.widget.Toast;
 
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonArrayRequest;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
 import com.example.animeinfo.R;
 import com.example.animeinfo.adapters.AdapterAnimes;
 import com.example.animeinfo.model.Anime;
@@ -48,6 +56,7 @@ import java.net.MalformedURLException;
 import java.net.ProtocolException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.net.URLEncoder;
 
 import javax.security.auth.login.LoginException;
 
@@ -62,9 +71,12 @@ public class MainActivity extends AppCompatActivity {
 
     private Anime animeMod;
 
+    // Cola donde se guardara los request que solicitamos.
+    private RequestQueue queue;
+    private MatrixCursor cursor;
+
     private AdapterAnimes adapterAnimes;
     private RecyclerView recyclerAnimes;
-    private ConexionSQLiteHelper conexion;
 
     private ProgressDialog pd;
     private AsyncTaskGET asyncTaskGET;
@@ -78,8 +90,7 @@ public class MainActivity extends AppCompatActivity {
 
         solicitarPermisos();
 
-        // Conectamos a la BD
-        conexion = new ConexionSQLiteHelper(this, AnimeConstantes.NOMBRE_DB, null, 1);
+        queue = Volley.newRequestQueue(this);
 
         recyclerAnimes = findViewById(R.id.idRecyclerView);
         recyclerAnimes.setLayoutManager(new LinearLayoutManager(this));
@@ -120,7 +131,7 @@ public class MainActivity extends AppCompatActivity {
         MenuItem item = menu.findItem(R.id.action_buscar);
 
         // Asignar un SearchView al boton del action
-        /*SearchView search = (SearchView) item.getActionView();
+        SearchView search = (SearchView) item.getActionView();
         search.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
@@ -135,15 +146,54 @@ public class MainActivity extends AppCompatActivity {
                 // * Si no se está  buscando nada se actualiza la lista actual
                 // * sino se actualiza la lista filtrada.
                 if (newText.isEmpty()){
-                    adapterAnimes.swapCursor(selectAnimes(""));
+                    iniciarAsyncTaskGET();
                 } else {
-                    String where = " WHERE " + AnimeConstantes.TITULO + " LIKE('" + newText + "%')";
-                    adapterAnimes.swapCursor(selectAnimes(where));
+                    adapterAnimes.swapCursor(buscadorVolleyGET(newText));
                 }
                 return true;
             }
-        });*/
+        });
         return true;
+    }
+
+    /**
+     * Buscador utilizando Volley con GET
+     * @return
+     */
+    public Cursor buscadorVolleyGET(String titulo){
+        cursor = new MatrixCursor(new String[] {"c_id", "c_titulo", "c_estreno", "c_favorito", "c_url", "c_info"});
+        String url = "http://" + AnimeConstantes.IP + "/animes/" + titulo;
+        StringRequest request = new StringRequest(Request.Method.GET, url, new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+                try {
+                    JSONArray respJSON = new JSONArray(response);
+
+                    for(int i=0; i < response.length(); i++) {
+                        JSONObject obj = respJSON.getJSONObject(i);
+
+                        //Toast.makeText(MainActivity.this, obj.getString("titulo"), Toast.LENGTH_SHORT).show();
+                        cursor.newRow()
+                                .add("c_id", obj.getInt("id"))
+                                .add("c_titulo", obj.getString("titulo"))
+                                .add("c_estreno", obj.getString("estreno"))
+                                .add("c_favorito", obj.getInt("favorito"))
+                                .add("c_url", obj.getString("url"))
+                                .add("c_info", obj.getString("info"));
+                    }
+
+                } catch (JSONException e){
+                    e.printStackTrace();
+                }
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Log.e("onErrorResponse Volley:", error.toString());
+            }
+        });
+        queue.add(request);
+        return cursor;
     }
 
 
@@ -240,10 +290,6 @@ public class MainActivity extends AppCompatActivity {
      *  ======================= CLASES AsyncTask =========================
      *  ================================================================== */
 
-    /**
-     * GET Animes
-     * @return
-     */
     public String readJSON() {
          StringBuilder json = new StringBuilder();
          try {
