@@ -33,14 +33,11 @@ import java.net.URL;
 
 public class Favoritos extends AppCompatActivity {
 
-    private final int SEGUNDOS_ESPERA = 10;
-
     private ProgressDialog pd;
     private Favoritos.MiAsyncTask miAsyncTask;
 
     private AdapterAnimes adapterAnimes;
     private RecyclerView recyclerAnimes;
-    private ConexionSQLiteHelper conexion;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
