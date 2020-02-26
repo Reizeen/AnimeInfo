@@ -73,7 +73,6 @@ public class MainActivity extends AppCompatActivity {
 
     // Cola donde se guardara los request que solicitamos.
     private RequestQueue queue;
-    private MatrixCursor cursor;
 
     private AdapterAnimes adapterAnimes;
     private RecyclerView recyclerAnimes;
@@ -148,7 +147,7 @@ public class MainActivity extends AppCompatActivity {
                 if (newText.isEmpty()){
                     iniciarAsyncTaskGET();
                 } else {
-                    adapterAnimes.swapCursor(buscadorVolleyGET(newText));
+                    buscadorVolleyGET(newText);
                 }
                 return true;
             }
@@ -160,17 +159,16 @@ public class MainActivity extends AppCompatActivity {
      * Buscador utilizando Volley con GET
      * @return
      */
-    public Cursor buscadorVolleyGET(String titulo){
-        cursor = new MatrixCursor(new String[] {"c_id", "c_titulo", "c_estreno", "c_favorito", "c_url", "c_info"});
+    public void buscadorVolleyGET(String titulo) {
         String url = "http://" + AnimeConstantes.IP + "/animes/" + titulo;
-        StringRequest request = new StringRequest(Request.Method.GET, url, new Response.Listener<String>() {
+        JsonArrayRequest requestString = new JsonArrayRequest(url, new Response.Listener<JSONArray>() {
             @Override
-            public void onResponse(String response) {
+            public void onResponse(JSONArray response) {
                 try {
-                    JSONArray respJSON = new JSONArray(response);
+                    MatrixCursor cursor = new MatrixCursor(new String[] {"c_id", "c_titulo", "c_estreno", "c_favorito", "c_url", "c_info"});
 
                     for(int i=0; i < response.length(); i++) {
-                        JSONObject obj = respJSON.getJSONObject(i);
+                        JSONObject obj = response.getJSONObject(i);
 
                         //Toast.makeText(MainActivity.this, obj.getString("titulo"), Toast.LENGTH_SHORT).show();
                         cursor.newRow()
@@ -182,6 +180,8 @@ public class MainActivity extends AppCompatActivity {
                                 .add("c_info", obj.getString("info"));
                     }
 
+                    adapterAnimes.swapCursor(cursor);
+
                 } catch (JSONException e){
                     e.printStackTrace();
                 }
@@ -192,8 +192,8 @@ public class MainActivity extends AppCompatActivity {
                 Log.e("onErrorResponse Volley:", error.toString());
             }
         });
-        queue.add(request);
-        return cursor;
+        RequestQueue request = Volley.newRequestQueue(this);
+        request.add(requestString);
     }
 
 
