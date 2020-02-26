@@ -308,7 +308,7 @@ public class MainActivity extends AppCompatActivity {
              e.printStackTrace();
          }
 
-         Log.i(null, "-------OBSERVAR JSON------- " + json.toString());
+         Log.i(null, "JSON: " + json.toString());
          return json.toString();
      }
 

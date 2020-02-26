@@ -7,15 +7,29 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.database.Cursor;
+import android.database.MatrixCursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.Toast;
 
 import com.example.animeinfo.R;
 import com.example.animeinfo.adapters.AdapterAnimes;
 import com.example.animeinfo.model.AnimeConstantes;
 import com.example.animeinfo.model.ConexionSQLiteHelper;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
 
 public class Favoritos extends AppCompatActivity {
 
@@ -35,31 +49,65 @@ public class Favoritos extends AppCompatActivity {
 
         this.setTitle("Favoritos");
 
-        // Conectamos a la BD
-        conexion = new ConexionSQLiteHelper(this, AnimeConstantes.NOMBRE_DB, null, 1);
-
         recyclerAnimes = findViewById(R.id.idRecyclerFavoritos);
         recyclerAnimes.setLayoutManager(new LinearLayoutManager(this));
 
         iniciarAsyncTask();
     }
 
+
+    public String readJSON() {
+        StringBuilder json = new StringBuilder();
+        try {
+            URL web = new URL("http://" + AnimeConstantes.IP + "/favoritos");
+            HttpURLConnection urlConn = (HttpURLConnection) web.openConnection();
+            InputStream in = new BufferedInputStream(urlConn.getInputStream());
+            BufferedReader reader = new BufferedReader(new InputStreamReader(in));
+
+            String inputLine;
+            while ((inputLine = reader.readLine()) != null)
+                json.append(inputLine);
+
+            in.close();
+            urlConn.disconnect();
+        } catch(IOException e){
+            e.printStackTrace();
+        }
+
+        Log.i(null, "JSON: " + json.toString());
+        return json.toString();
+    }
+
     /**
      * Cargar solo los objetos que estén en favoritos
      */
-    public Cursor selectAnimes(String where) {
-        SQLiteDatabase db = conexion.getReadableDatabase();
-        Cursor c = db.rawQuery("SELECT " +
-                AnimeConstantes.ID + ", " +
-                AnimeConstantes.TITULO + ", " +
-                AnimeConstantes.ESTRENO + ", " +
-                AnimeConstantes.FAVORITO + ", " +
-                AnimeConstantes.IMAGEN + ", " +
-                AnimeConstantes.URL_WEB + ", " +
-                AnimeConstantes.INFO_DESCRIPCION + " " +
-                "FROM " + AnimeConstantes.TABLA_ANIME + where, null);
+    public Cursor selectAnimes() {
+        MatrixCursor cursor = new MatrixCursor(
+                new String[] {"c_id", "c_titulo", "c_estreno", "c_favorito", "c_url", "c_info"});
+        try {
+            JSONArray respJSON = new JSONArray(readJSON());
 
-        return c;
+            for(int i=0; i < respJSON.length(); i++) {
+                JSONObject obj = respJSON.getJSONObject(i);
+
+                /**convertir string a blob para meterlo en el cursor
+                 * y no tener que cambiar el adaptador */
+                /*String imagen = obj.getString("imagen");
+                byte[] byteImage = imagen.getBytes();*/
+
+                cursor.newRow()
+                        .add("c_id", obj.getInt("id"))
+                        .add("c_titulo", obj.getString("titulo"))
+                        .add("c_estreno", obj.getString("estreno"))
+                        .add("c_favorito", obj.getInt("favorito"))
+                        .add("c_url", obj.getString("url"))
+                        .add("c_info", obj.getString("info"));
+            }
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return cursor;
     }
 
     /**
@@ -117,15 +165,11 @@ public class Favoritos extends AppCompatActivity {
          */
         @Override
         protected Boolean doInBackground(Void... voids) {
-            for (int i = 0; i < SEGUNDOS_ESPERA; i++){
-                try {
-                    if(isCancelled())
-                        break;
-                    Thread.sleep(1000);
-                } catch(InterruptedException e) {}
 
-            }
-            adapterAnimes = new AdapterAnimes(getApplicationContext(), selectAnimes(" WHERE " + AnimeConstantes.FAVORITO + " = 1"));
+            if(isCancelled())
+                return false;
+
+            adapterAnimes = new AdapterAnimes(getApplicationContext(), selectAnimes());
 
             return true;
         }

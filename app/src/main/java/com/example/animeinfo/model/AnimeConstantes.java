@@ -13,7 +13,7 @@ public class AnimeConstantes {
     public static final String URL_WEB = "url";
     public static final String INFO_DESCRIPCION = "descripcion";
 
-    public static final String IP = "10.10.0.16:3000";
+    public static final String IP = "Reizen.pythonanywhere.com";
 
     /**
      * Numero de la posicion de cada columna en la BD
